@@ -15,6 +15,7 @@
 
 
 
+#include <sys/wait.h>
 #include <stdlib.h>
 #include <gtk/gtk.h>
 #include <System.h>
@@ -47,6 +48,7 @@ struct _TerminalTab
 
 /* prototypes */
 /* callbacks */
+static void _terminal_on_child_watch(GPid pid, gint status, gpointer data);
 static gboolean _terminal_on_closex(gpointer data);
 
 
@@ -98,7 +100,9 @@ Terminal * terminal_new(void)
 	snprintf(buf, sizeof(buf), "%u", gtk_socket_get_id(
 				GTK_SOCKET(terminal->tabs->socket)));
 	argv[2] = buf;
-	if(g_spawn_async(NULL, argv, NULL, G_SPAWN_SEARCH_PATH, NULL, NULL,
+	if(g_spawn_async(NULL, argv, NULL,
+				G_SPAWN_SEARCH_PATH | G_SPAWN_DO_NOT_REAP_CHILD,
+				NULL, NULL,
 				&terminal->tabs->pid, &error) == FALSE)
 	{
 		fprintf(stderr, "%s: %s: %s\n", "Terminal", argv[0],
@@ -107,6 +111,8 @@ Terminal * terminal_new(void)
 		terminal_delete(terminal);
 		return NULL;
 	}
+	g_child_watch_add(terminal->tabs->pid, _terminal_on_child_watch,
+			terminal);
 	gtk_widget_show(terminal->window);
 	return terminal;
 }
@@ -131,6 +137,30 @@ void terminal_delete(Terminal * terminal)
 /* private */
 /* functions */
 /* callbacks */
+/* terminal_on_child_watch */
+static void _terminal_on_child_watch(GPid pid, gint status, gpointer data)
+{
+	Terminal * terminal = data;
+
+	if(terminal->tabs->pid != pid)
+		return;
+	if(WIFEXITED(status))
+	{
+		if(WEXITSTATUS(status) != 0)
+			fprintf(stderr, "%s: %s%u\n", "Terminal",
+					"xterm exited with status ",
+					WEXITSTATUS(status));
+		gtk_main_quit();
+	}
+	else if(WIFSIGNALED(status))
+	{
+		fprintf(stderr, "%s: %s%u\n", "Terminal",
+				"xterm exited with signal ", WTERMSIG(status));
+		gtk_main_quit();
+	}
+}
+
+
 /* terminal_on_closex */
 static gboolean _terminal_on_closex(gpointer data)
 {
