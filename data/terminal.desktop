@@ -1,0 +1,8 @@
+[Desktop Entry]
+Name=Terminal
+Comment=Terminal emulator
+Exec=terminal
+Icon=terminal
+Type=Application
+Categories=System;GTK;
+StartupNotify=true
