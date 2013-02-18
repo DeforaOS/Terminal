@@ -21,7 +21,9 @@
 #include <sys/wait.h>
 #include <stdlib.h>
 #include <gtk/gtk.h>
+#include <gdk/gdkkeysyms.h>
 #include <System.h>
+#include <Desktop.h>
 #include "terminal.h"
 #include "../config.h"
 
@@ -61,6 +63,25 @@ struct _TerminalTab
 /* callbacks */
 static void _terminal_on_child_watch(GPid pid, gint status, gpointer data);
 static gboolean _terminal_on_closex(gpointer data);
+static void _terminal_on_close(gpointer data);
+static gboolean _terminal_on_closex(gpointer data);
+
+static void _terminal_on_file_close(gpointer data);
+
+/* constants */
+/* menubar */
+static const DesktopMenu _terminal_file_menu[] =
+{
+	{ "_Close", G_CALLBACK(_terminal_on_file_close), GTK_STOCK_CLOSE,
+		GDK_CONTROL_MASK, GDK_KEY_W },
+	{ NULL, NULL, NULL, 0, 0 }
+};
+
+static const DesktopMenubar _terminal_menubar[] =
+{
+	{ "_File", _terminal_file_menu },
+	{ NULL, NULL }
+};
 
 
 /* public */
@@ -69,6 +90,7 @@ static gboolean _terminal_on_closex(gpointer data);
 Terminal * terminal_new(void)
 {
 	Terminal * terminal;
+	GtkAccelGroup * group;
 	GtkWidget * vbox;
 	GtkWidget * widget;
 	char * argv[] = { BINDIR "/xterm", "xterm", "-into", NULL, NULL };
@@ -89,14 +111,16 @@ Terminal * terminal_new(void)
 		return NULL;
 	}
 	/* widgets */
+	group = gtk_accel_group_new();
 	terminal->window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+	gtk_window_add_accel_group(GTK_WINDOW(terminal->window), group);
 	gtk_window_set_default_size(GTK_WINDOW(terminal->window), 400, 200);
 	gtk_window_set_title(GTK_WINDOW(terminal->window), "Terminal");
 	g_signal_connect_swapped(terminal->window, "delete-event", G_CALLBACK(
 				_terminal_on_closex), terminal);
 	vbox = gtk_vbox_new(FALSE, 0);
 	/* menu bar */
-	widget = gtk_menu_bar_new();
+	widget = desktop_menubar_create(_terminal_menubar, terminal, group);
 	gtk_box_pack_start(GTK_BOX(vbox), widget, FALSE, TRUE, 0);
 	/* view */
 	terminal->notebook = gtk_notebook_new();
@@ -171,12 +195,30 @@ static void _terminal_on_child_watch(GPid pid, gint status, gpointer data)
 }
 
 
-/* terminal_on_closex */
-static gboolean _terminal_on_closex(gpointer data)
+/* terminal_on_close */
+static void _terminal_on_close(gpointer data)
 {
 	Terminal * terminal = data;
 
 	gtk_widget_hide(terminal->window);
 	gtk_main_quit();
+}
+
+
+/* terminal_on_closex */
+static gboolean _terminal_on_closex(gpointer data)
+{
+	Terminal * terminal = data;
+
+	_terminal_on_close(terminal);
 	return TRUE;
+}
+
+
+/* terminal_on_file_close */
+static void _terminal_on_file_close(gpointer data)
+{
+	Terminal * terminal = data;
+
+	_terminal_on_close(terminal);
 }
