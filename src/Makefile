@@ -24,8 +24,8 @@ terminal_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 terminal: $(terminal_OBJS)
 	$(CC) -o terminal $(terminal_OBJS) $(terminal_LDFLAGS)
 
-terminal.o: terminal.c terminal.h
-	$(CC) $(terminal_CFLAGS) -c terminal.c
+terminal.o: terminal.c terminal.h ../config.h
+	$(CC) -D PREFIX=\"$(PREFIX)\" $(terminal_CFLAGS) -c terminal.c
 
 main.o: main.c terminal.h ../config.h
 	$(CC) $(terminal_CFLAGS) -c main.c

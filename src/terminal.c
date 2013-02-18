@@ -23,6 +23,14 @@
 #include <gtk/gtk.h>
 #include <System.h>
 #include "terminal.h"
+#include "../config.h"
+
+#ifndef PREFIX
+# define PREFIX		"/usr/local"
+#endif
+#ifndef BINDIR
+# define BINDIR		PREFIX "/bin"
+#endif
 
 
 /* Terminal */
@@ -63,8 +71,9 @@ Terminal * terminal_new(void)
 	Terminal * terminal;
 	GtkWidget * vbox;
 	GtkWidget * widget;
-	char * argv[] = { "xterm", "-into", NULL, NULL };
+	char * argv[] = { BINDIR "/xterm", "xterm", "-into", NULL, NULL };
 	char buf[16];
+	int flags = G_SPAWN_FILE_AND_ARGV_ZERO | G_SPAWN_DO_NOT_REAP_CHILD;
 	GError * error = NULL;
 
 	if((terminal = object_new(sizeof(*terminal))) == NULL)
@@ -102,13 +111,11 @@ Terminal * terminal_new(void)
 	/* launch xterm */
 	snprintf(buf, sizeof(buf), "%u", gtk_socket_get_id(
 				GTK_SOCKET(terminal->tabs->socket)));
-	argv[2] = buf;
-	if(g_spawn_async(NULL, argv, NULL,
-				G_SPAWN_SEARCH_PATH | G_SPAWN_DO_NOT_REAP_CHILD,
-				NULL, NULL,
+	argv[3] = buf;
+	if(g_spawn_async(NULL, argv, NULL, flags, NULL, NULL,
 				&terminal->tabs->pid, &error) == FALSE)
 	{
-		fprintf(stderr, "%s: %s: %s\n", "Terminal", argv[0],
+		fprintf(stderr, "%s: %s: %s\n", "Terminal", argv[1],
 				error->message);
 		g_error_free(error);
 		terminal_delete(terminal);
