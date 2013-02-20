@@ -20,6 +20,7 @@
 
 #include <sys/wait.h>
 #include <stdlib.h>
+#include <string.h>
 #include <gtk/gtk.h>
 #include <gdk/gdkkeysyms.h>
 #include <System.h>
@@ -60,6 +61,9 @@ struct _TerminalTab
 
 
 /* prototypes */
+/* useful */
+static int _terminal_open_tab(Terminal * terminal);
+
 /* callbacks */
 static void _terminal_on_child_watch(GPid pid, gint status, gpointer data);
 static gboolean _terminal_on_closex(gpointer data);
@@ -67,11 +71,15 @@ static void _terminal_on_close(gpointer data);
 static gboolean _terminal_on_closex(gpointer data);
 
 static void _terminal_on_file_close(gpointer data);
+static void _terminal_on_file_new_tab(gpointer data);
 
 /* constants */
 /* menubar */
 static const DesktopMenu _terminal_file_menu[] =
 {
+	{ "_New tab", G_CALLBACK(_terminal_on_file_new_tab), "tab-new",
+		GDK_CONTROL_MASK, GDK_KEY_T },
+	{ "", NULL, NULL, 0, 0 },
 	{ "_Close", G_CALLBACK(_terminal_on_file_close), GTK_STOCK_CLOSE,
 		GDK_CONTROL_MASK, GDK_KEY_W },
 	{ NULL, NULL, NULL, 0, 0 }
@@ -93,23 +101,12 @@ Terminal * terminal_new(void)
 	GtkAccelGroup * group;
 	GtkWidget * vbox;
 	GtkWidget * widget;
-	char * argv[] = { BINDIR "/xterm", "xterm", "-into", NULL, NULL };
-	char buf[16];
-	int flags = G_SPAWN_FILE_AND_ARGV_ZERO | G_SPAWN_DO_NOT_REAP_CHILD;
-	GError * error = NULL;
 
 	if((terminal = object_new(sizeof(*terminal))) == NULL)
 		return NULL;
-	/* FIXME really implement */
-	terminal->tabs = malloc(sizeof(*terminal->tabs));
-	terminal->tabs_cnt = 1;
+	terminal->tabs = NULL;
+	terminal->tabs_cnt = 0;
 	terminal->window = NULL;
-	/* check for errors */
-	if(terminal->tabs == NULL)
-	{
-		terminal_delete(terminal);
-		return NULL;
-	}
 	/* widgets */
 	group = gtk_accel_group_new();
 	terminal->window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
@@ -124,29 +121,15 @@ Terminal * terminal_new(void)
 	gtk_box_pack_start(GTK_BOX(vbox), widget, FALSE, TRUE, 0);
 	/* view */
 	terminal->notebook = gtk_notebook_new();
+	gtk_notebook_set_scrollable(GTK_NOTEBOOK(terminal->notebook), TRUE);
 	gtk_box_pack_start(GTK_BOX(vbox), terminal->notebook, TRUE, TRUE, 0);
-	/* first tab */
-	terminal->tabs->socket = gtk_socket_new();
-	terminal->tabs->label = gtk_label_new("xterm");
-	gtk_notebook_append_page(GTK_NOTEBOOK(terminal->notebook),
-			terminal->tabs->socket, terminal->tabs->label);
 	gtk_container_add(GTK_CONTAINER(terminal->window), vbox);
 	gtk_widget_show_all(vbox);
-	/* launch xterm */
-	snprintf(buf, sizeof(buf), "%u", gtk_socket_get_id(
-				GTK_SOCKET(terminal->tabs->socket)));
-	argv[3] = buf;
-	if(g_spawn_async(NULL, argv, NULL, flags, NULL, NULL,
-				&terminal->tabs->pid, &error) == FALSE)
+	if(_terminal_open_tab(terminal) != 0)
 	{
-		fprintf(stderr, "%s: %s: %s\n", "Terminal", argv[1],
-				error->message);
-		g_error_free(error);
 		terminal_delete(terminal);
 		return NULL;
 	}
-	g_child_watch_add(terminal->tabs->pid, _terminal_on_child_watch,
-			terminal);
 	gtk_widget_show(terminal->window);
 	return terminal;
 }
@@ -170,13 +153,55 @@ void terminal_delete(Terminal * terminal)
 
 /* private */
 /* functions */
+/* useful */
+/* terminal_open_tab */
+static int _terminal_open_tab(Terminal * terminal)
+{
+	TerminalTab * p;
+	char * argv[] = { BINDIR "/xterm", "xterm", "-into", NULL, NULL };
+	char buf[16];
+	int flags = G_SPAWN_FILE_AND_ARGV_ZERO | G_SPAWN_DO_NOT_REAP_CHILD;
+	GError * error = NULL;
+
+	if((p = realloc(terminal->tabs, sizeof(*p) * (terminal->tabs_cnt + 1)))
+			== NULL)
+		return -1;
+	terminal->tabs = p;
+	p = &terminal->tabs[terminal->tabs_cnt++];
+	/* first tab */
+	p->socket = gtk_socket_new();
+	p->label = gtk_label_new("xterm");
+	gtk_notebook_append_page(GTK_NOTEBOOK(terminal->notebook), p->socket,
+			p->label);
+	/* launch xterm */
+	snprintf(buf, sizeof(buf), "%u", gtk_socket_get_id(
+				GTK_SOCKET(p->socket)));
+	argv[3] = buf;
+	if(g_spawn_async(NULL, argv, NULL, flags, NULL, NULL, &p->pid, &error)
+			== FALSE)
+	{
+		fprintf(stderr, "%s: %s: %s\n", "Terminal", argv[1],
+				error->message);
+		g_error_free(error);
+		return -1;
+	}
+	g_child_watch_add(p->pid, _terminal_on_child_watch, terminal);
+	gtk_widget_show(p->socket);
+	return 0;
+}
+
+
 /* callbacks */
 /* terminal_on_child_watch */
 static void _terminal_on_child_watch(GPid pid, gint status, gpointer data)
 {
 	Terminal * terminal = data;
+	size_t i;
 
-	if(terminal->tabs->pid != pid)
+	for(i = 0; i < terminal->tabs_cnt; i++)
+		if(terminal->tabs[i].pid == pid)
+			break;
+	if(i == terminal->tabs_cnt)
 		return;
 	if(WIFEXITED(status))
 	{
@@ -184,14 +209,20 @@ static void _terminal_on_child_watch(GPid pid, gint status, gpointer data)
 			fprintf(stderr, "%s: %s%u\n", "Terminal",
 					"xterm exited with status ",
 					WEXITSTATUS(status));
-		gtk_main_quit();
 	}
 	else if(WIFSIGNALED(status))
 	{
 		fprintf(stderr, "%s: %s%u\n", "Terminal",
 				"xterm exited with signal ", WTERMSIG(status));
-		gtk_main_quit();
 	}
+	else
+		return;
+	gtk_notebook_remove_page(GTK_NOTEBOOK(terminal->notebook), i);
+	memmove(&terminal->tabs[i], &terminal->tabs[i + 1],
+			(terminal->tabs_cnt - (i + 1))
+			* sizeof(*terminal->tabs));
+	if(--terminal->tabs_cnt == 0)
+		gtk_main_quit();
 }
 
 
@@ -221,4 +252,13 @@ static void _terminal_on_file_close(gpointer data)
 	Terminal * terminal = data;
 
 	_terminal_on_close(terminal);
+}
+
+
+/* terminal_on_file_new_tab */
+static void _terminal_on_file_new_tab(gpointer data)
+{
+	Terminal * terminal = data;
+
+	_terminal_open_tab(terminal);
 }
