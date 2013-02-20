@@ -168,7 +168,7 @@ static int _terminal_open_tab(Terminal * terminal)
 		return -1;
 	terminal->tabs = p;
 	p = &terminal->tabs[terminal->tabs_cnt++];
-	/* first tab */
+	/* create the tab */
 	p->socket = gtk_socket_new();
 	p->label = gtk_label_new("xterm");
 	gtk_notebook_append_page(GTK_NOTEBOOK(terminal->notebook), p->socket,
