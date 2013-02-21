@@ -73,12 +73,13 @@ static char const * _authors[] =
 /* prototypes */
 /* useful */
 static int _terminal_open_tab(Terminal * terminal);
+static void _terminal_close_tab(Terminal * terminal, unsigned int i);
 
 /* callbacks */
 static void _terminal_on_child_watch(GPid pid, gint status, gpointer data);
-static gboolean _terminal_on_closex(gpointer data);
 static void _terminal_on_close(gpointer data);
 static gboolean _terminal_on_closex(gpointer data);
+static void _terminal_on_tab_close(GtkWidget * widget, gpointer data);
 
 static void _terminal_on_file_close(gpointer data);
 static void _terminal_on_file_new_tab(gpointer data);
@@ -177,6 +178,7 @@ void terminal_delete(Terminal * terminal)
 static int _terminal_open_tab(Terminal * terminal)
 {
 	TerminalTab * p;
+	GtkWidget * widget;
 	char * argv[] = { BINDIR "/xterm", "xterm", "-into", NULL, NULL };
 	char buf[16];
 	int flags = G_SPAWN_FILE_AND_ARGV_ZERO | G_SPAWN_DO_NOT_REAP_CHILD;
@@ -189,7 +191,17 @@ static int _terminal_open_tab(Terminal * terminal)
 	p = &terminal->tabs[terminal->tabs_cnt++];
 	/* create the tab */
 	p->socket = gtk_socket_new();
-	p->label = gtk_label_new("xterm");
+	p->label = gtk_hbox_new(FALSE, 4);
+	gtk_box_pack_start(GTK_BOX(p->label), gtk_label_new("xterm"), TRUE,
+			TRUE, 0);
+	widget = gtk_button_new();
+	g_signal_connect(widget, "clicked", G_CALLBACK(_terminal_on_tab_close),
+			terminal);
+	gtk_container_add(GTK_CONTAINER(widget), gtk_image_new_from_stock(
+				GTK_STOCK_CLOSE, GTK_ICON_SIZE_MENU));
+	gtk_button_set_relief(GTK_BUTTON(widget), GTK_RELIEF_NONE);
+	gtk_box_pack_start(GTK_BOX(p->label), widget, FALSE, TRUE, 0);
+	gtk_widget_show_all(p->label);
 	gtk_notebook_append_page(GTK_NOTEBOOK(terminal->notebook), p->socket,
 			p->label);
 	/* launch xterm */
@@ -207,6 +219,18 @@ static int _terminal_open_tab(Terminal * terminal)
 	g_child_watch_add(p->pid, _terminal_on_child_watch, terminal);
 	gtk_widget_show(p->socket);
 	return 0;
+}
+
+
+/* terminal_close_tab */
+static void _terminal_close_tab(Terminal * terminal, unsigned int i)
+{
+	gtk_notebook_remove_page(GTK_NOTEBOOK(terminal->notebook), i);
+	memmove(&terminal->tabs[i], &terminal->tabs[i + 1],
+			(terminal->tabs_cnt - (i + 1))
+			* sizeof(*terminal->tabs));
+	if(--terminal->tabs_cnt == 0)
+		gtk_main_quit();
 }
 
 
@@ -236,12 +260,7 @@ static void _terminal_on_child_watch(GPid pid, gint status, gpointer data)
 	}
 	else
 		return;
-	gtk_notebook_remove_page(GTK_NOTEBOOK(terminal->notebook), i);
-	memmove(&terminal->tabs[i], &terminal->tabs[i + 1],
-			(terminal->tabs_cnt - (i + 1))
-			* sizeof(*terminal->tabs));
-	if(--terminal->tabs_cnt == 0)
-		gtk_main_quit();
+	_terminal_close_tab(terminal, i);
 }
 
 
@@ -262,6 +281,23 @@ static gboolean _terminal_on_closex(gpointer data)
 
 	_terminal_on_close(terminal);
 	return TRUE;
+}
+
+
+/* terminal_on_tab_close */
+static void _terminal_on_tab_close(GtkWidget * widget, gpointer data)
+{
+	Terminal * terminal = data;
+	size_t i;
+
+	widget = gtk_widget_get_parent(widget);
+	for(i = 0; i < terminal->tabs_cnt; i++)
+		if(terminal->tabs[i].label == widget)
+			break;
+	if(i == terminal->tabs_cnt)
+		/* should not happen */
+		return;
+	_terminal_close_tab(terminal, i);
 }
 
 
