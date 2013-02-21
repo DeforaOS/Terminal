@@ -1,17 +1,19 @@
 /* $Id$ */
-/* Copyright (c) 2012-2013 Pierre Pronchery <khorben@defora.org> */
+char const _copyright[] =
+"Copyright (c) 2012-2013 Pierre Pronchery <khorben@defora.org>";
 /* This file is part of DeforaOS Desktop Terminal */
-/* This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, version 3 of the License.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>. */
+char const _license[] =
+"This program is free software: you can redistribute it and/or modify\n"
+"it under the terms of the GNU General Public License as published by\n"
+"the Free Software Foundation, version 3 of the License.\n"
+"\n"
+"This program is distributed in the hope that it will be useful,\n"
+"but WITHOUT ANY WARRANTY; without even the implied warranty of\n"
+"MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the\n"
+"GNU General Public License for more details.\n"
+"\n"
+"You should have received a copy of the GNU General Public License\n"
+"along with this program.  If not, see <http://www.gnu.org/licenses/>.";
 /* TODO:
  * - figure how to handle X resources
  * - determine if XTerm needs the "allowSendEvents" resource */
@@ -60,6 +62,14 @@ struct _TerminalTab
 };
 
 
+/* constants */
+static char const * _authors[] =
+{
+	"Pierre Pronchery <khorben@defora.org>",
+	NULL
+};
+
+
 /* prototypes */
 /* useful */
 static int _terminal_open_tab(Terminal * terminal);
@@ -72,6 +82,7 @@ static gboolean _terminal_on_closex(gpointer data);
 
 static void _terminal_on_file_close(gpointer data);
 static void _terminal_on_file_new_tab(gpointer data);
+static void _terminal_on_help_about(gpointer data);
 
 /* constants */
 /* menubar */
@@ -85,9 +96,17 @@ static const DesktopMenu _terminal_file_menu[] =
 	{ NULL, NULL, NULL, 0, 0 }
 };
 
+static const DesktopMenu _terminal_help_menu[] =
+{
+	{ "_About", G_CALLBACK(_terminal_on_help_about), GTK_STOCK_ABOUT, 0,
+		0 },
+	{ NULL, NULL, NULL, 0, 0 }
+};
+
 static const DesktopMenubar _terminal_menubar[] =
 {
 	{ "_File", _terminal_file_menu },
+	{ "_Help", _terminal_help_menu },
 	{ NULL, NULL }
 };
 
@@ -261,4 +280,27 @@ static void _terminal_on_file_new_tab(gpointer data)
 	Terminal * terminal = data;
 
 	_terminal_open_tab(terminal);
+}
+
+
+/* terminal_on_help_about */
+static void _terminal_on_help_about(gpointer data)
+{
+	Terminal * terminal = data;
+	GtkWidget * dialog;
+
+	dialog = desktop_about_dialog_new();
+	gtk_window_set_transient_for(GTK_WINDOW(dialog),
+			GTK_WINDOW(terminal->window));
+	desktop_about_dialog_set_authors(dialog, _authors);
+	desktop_about_dialog_set_comments(dialog,
+			"Terminal for the DeforaOS desktop");
+	desktop_about_dialog_set_copyright(dialog, _copyright);
+	desktop_about_dialog_set_license(dialog, _license);
+	desktop_about_dialog_set_logo_icon_name(dialog, "terminal");
+	desktop_about_dialog_set_name(dialog, PACKAGE);
+	desktop_about_dialog_set_version(dialog, VERSION);
+	desktop_about_dialog_set_website(dialog, "http://www.defora.org/");
+	gtk_dialog_run(GTK_DIALOG(dialog));
+	gtk_widget_destroy(dialog);
 }
