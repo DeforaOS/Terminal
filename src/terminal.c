@@ -21,6 +21,7 @@ char const _license[] =
 
 #include <sys/wait.h>
 #include <stdlib.h>
+#include <stdio.h>
 #include <string.h>
 #include <gtk/gtk.h>
 #include <gdk/gdkkeysyms.h>
@@ -58,6 +59,7 @@ struct _TerminalTab
 	GtkWidget * label;
 	GtkWidget * socket;
 	GPid pid;
+	guint source;
 };
 
 
@@ -229,7 +231,8 @@ static int _terminal_open_tab(Terminal * terminal)
 		g_error_free(error);
 		return -1;
 	}
-	g_child_watch_add(p->pid, _terminal_on_child_watch, terminal);
+	p->source = g_child_watch_add(p->pid, _terminal_on_child_watch,
+			terminal);
 	gtk_widget_show(p->socket);
 	return 0;
 }
@@ -238,6 +241,13 @@ static int _terminal_open_tab(Terminal * terminal)
 /* terminal_close_tab */
 static void _terminal_close_tab(Terminal * terminal, unsigned int i)
 {
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s(%u)\n", __func__, i);
+#endif
+	if(terminal->tabs[i].source > 0)
+		g_source_remove(terminal->tabs[i].source);
+	if(terminal->tabs[i].pid >= 0)
+		g_spawn_close_pid(terminal->tabs[i].pid);
 	gtk_notebook_remove_page(GTK_NOTEBOOK(terminal->notebook), i);
 	memmove(&terminal->tabs[i], &terminal->tabs[i + 1],
 			(terminal->tabs_cnt - (i + 1))
@@ -254,6 +264,9 @@ static void _terminal_on_child_watch(GPid pid, gint status, gpointer data)
 	Terminal * terminal = data;
 	size_t i;
 
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s(%d, %d)\n", __func__, pid, status);
+#endif
 	for(i = 0; i < terminal->tabs_cnt; i++)
 		if(terminal->tabs[i].pid == pid)
 			break;
@@ -265,15 +278,14 @@ static void _terminal_on_child_watch(GPid pid, gint status, gpointer data)
 			fprintf(stderr, "%s: %s%u\n", "Terminal",
 					"xterm exited with status ",
 					WEXITSTATUS(status));
+		_terminal_close_tab(terminal, i);
 	}
 	else if(WIFSIGNALED(status))
 	{
 		fprintf(stderr, "%s: %s%u\n", "Terminal",
 				"xterm exited with signal ", WTERMSIG(status));
+		_terminal_close_tab(terminal, i);
 	}
-	else
-		return;
-	_terminal_close_tab(terminal, i);
 }
 
 
