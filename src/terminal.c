@@ -15,8 +15,7 @@ char const _license[] =
 "You should have received a copy of the GNU General Public License\n"
 "along with this program.  If not, see <http://www.gnu.org/licenses/>.";
 /* TODO:
- * - figure how to handle X resources
- * - determine if XTerm needs the "allowSendEvents" resource */
+ * - figure how to handle X resources */
 
 
 
