@@ -138,6 +138,9 @@ Terminal * terminal_new(void)
 	terminal->window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 	gtk_window_add_accel_group(GTK_WINDOW(terminal->window), group);
 	gtk_window_set_default_size(GTK_WINDOW(terminal->window), 400, 200);
+#if GTK_CHECK_VERSION(2, 6, 0)
+	gtk_window_set_icon_name(GTK_WINDOW(terminal->window), "terminal");
+#endif
 	gtk_window_set_title(GTK_WINDOW(terminal->window), "Terminal");
 	g_signal_connect_swapped(terminal->window, "delete-event", G_CALLBACK(
 				_terminal_on_closex), terminal);
