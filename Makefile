@@ -1,6 +1,6 @@
 PACKAGE	= Terminal
 VERSION	= 0.0.0
-SUBDIRS	= data src
+SUBDIRS	= data doc src
 RM	= rm -f
 LN	= ln -f
 TAR	= tar -czvf
@@ -24,6 +24,9 @@ dist:
 		$(PACKAGE)-$(VERSION)/data/Makefile \
 		$(PACKAGE)-$(VERSION)/data/terminal.desktop \
 		$(PACKAGE)-$(VERSION)/data/project.conf \
+		$(PACKAGE)-$(VERSION)/doc/Makefile \
+		$(PACKAGE)-$(VERSION)/doc/Xresources \
+		$(PACKAGE)-$(VERSION)/doc/project.conf \
 		$(PACKAGE)-$(VERSION)/src/terminal.c \
 		$(PACKAGE)-$(VERSION)/src/main.c \
 		$(PACKAGE)-$(VERSION)/src/Makefile \

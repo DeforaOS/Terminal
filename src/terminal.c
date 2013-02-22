@@ -179,7 +179,8 @@ static int _terminal_open_tab(Terminal * terminal)
 {
 	TerminalTab * p;
 	GtkWidget * widget;
-	char * argv[] = { BINDIR "/xterm", "xterm", "-into", NULL, NULL };
+	char * argv[] = { BINDIR "/xterm", "xterm", "-into", NULL,
+		"-class", "Terminal", NULL };
 	char buf[16];
 	int flags = G_SPAWN_FILE_AND_ARGV_ZERO | G_SPAWN_DO_NOT_REAP_CHILD;
 	GError * error = NULL;
