@@ -219,6 +219,10 @@ static int _terminal_open_tab(Terminal * terminal)
 	gtk_widget_show_all(p->label);
 	gtk_notebook_append_page(GTK_NOTEBOOK(terminal->notebook), p->socket,
 			p->label);
+#if GTK_CHECK_VERSION(2, 10, 0)
+	gtk_notebook_set_tab_reorderable(GTK_NOTEBOOK(terminal->notebook),
+			p->socket, TRUE);
+#endif
 	/* launch xterm */
 	snprintf(buf, sizeof(buf), "%u", gtk_socket_get_id(
 				GTK_SOCKET(p->socket)));
