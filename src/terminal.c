@@ -78,6 +78,7 @@ static void _terminal_close_tab(Terminal * terminal, unsigned int i);
 static void _terminal_on_child_watch(GPid pid, gint status, gpointer data);
 static void _terminal_on_close(gpointer data);
 static gboolean _terminal_on_closex(gpointer data);
+static void _terminal_on_new_tab(gpointer data);
 static void _terminal_on_tab_close(GtkWidget * widget, gpointer data);
 
 static void _terminal_on_file_close(gpointer data);
@@ -110,6 +111,12 @@ static const DesktopMenubar _terminal_menubar[] =
 	{ NULL, NULL }
 };
 
+static DesktopToolbar _terminal_toolbar[] =
+{
+	{ "New tab", G_CALLBACK(_terminal_on_new_tab), "tab-new", 0, 0, NULL },
+	{ NULL, NULL, NULL, 0, 0, NULL }
+};
+
 
 /* public */
 /* functions */
@@ -135,8 +142,11 @@ Terminal * terminal_new(void)
 	g_signal_connect_swapped(terminal->window, "delete-event", G_CALLBACK(
 				_terminal_on_closex), terminal);
 	vbox = gtk_vbox_new(FALSE, 0);
-	/* menu bar */
+	/* menubar */
 	widget = desktop_menubar_create(_terminal_menubar, terminal, group);
+	gtk_box_pack_start(GTK_BOX(vbox), widget, FALSE, TRUE, 0);
+	/* toolbar */
+	widget = desktop_toolbar_create(_terminal_toolbar, terminal, group);
 	gtk_box_pack_start(GTK_BOX(vbox), widget, FALSE, TRUE, 0);
 	/* view */
 	terminal->notebook = gtk_notebook_new();
@@ -281,6 +291,15 @@ static gboolean _terminal_on_closex(gpointer data)
 
 	_terminal_on_close(terminal);
 	return TRUE;
+}
+
+
+/* terminal_on_new_tab */
+static void _terminal_on_new_tab(gpointer data)
+{
+	Terminal * terminal = data;
+
+	_terminal_open_tab(terminal);
 }
 
 
