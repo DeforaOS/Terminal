@@ -65,11 +65,13 @@ struct _TerminalTab
 
 
 /* constants */
+#ifndef EMBEDDED
 static char const * _authors[] =
 {
 	"Pierre Pronchery <khorben@defora.org>",
 	NULL
 };
+#endif
 
 
 /* prototypes */
