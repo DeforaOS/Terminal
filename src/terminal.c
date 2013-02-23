@@ -90,6 +90,8 @@ static void _terminal_on_file_close(gpointer data);
 static void _terminal_on_file_new_tab(gpointer data);
 static void _terminal_on_file_new_window(gpointer data);
 static void _terminal_on_help_about(gpointer data);
+static void _terminal_on_help_contents(gpointer data);
+
 
 /* constants */
 /* menubar */
@@ -107,8 +109,14 @@ static const DesktopMenu _terminal_file_menu[] =
 
 static const DesktopMenu _terminal_help_menu[] =
 {
+	{ "_Contents", G_CALLBACK(_terminal_on_help_contents), "help-contents",
+		0, GDK_KEY_F1 },
+#if GTK_CHECK_VERSION(2, 6, 0)
 	{ "_About", G_CALLBACK(_terminal_on_help_about), GTK_STOCK_ABOUT, 0,
 		0 },
+#else
+	{ "_About", G_CALLBACK(_terminal_on_help_about), NULL, 0, 0 },
+#endif
 	{ NULL, NULL, NULL, 0, 0 }
 };
 
@@ -422,4 +430,11 @@ static void _terminal_on_help_about(gpointer data)
 	desktop_about_dialog_set_website(dialog, "http://www.defora.org/");
 	gtk_dialog_run(GTK_DIALOG(dialog));
 	gtk_widget_destroy(dialog);
+}
+
+
+/* terminal_on_help_contents */
+static void _terminal_on_help_contents(gpointer data)
+{
+	desktop_help_contents(PACKAGE, "terminal");
 }
