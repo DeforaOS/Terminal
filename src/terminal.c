@@ -74,6 +74,7 @@ static char const * _authors[] =
 /* prototypes */
 /* useful */
 static int _terminal_open_tab(Terminal * terminal);
+static int _terminal_open_window(Terminal * terminal);
 static void _terminal_close_tab(Terminal * terminal, unsigned int i);
 
 /* callbacks */
@@ -81,18 +82,22 @@ static void _terminal_on_child_watch(GPid pid, gint status, gpointer data);
 static void _terminal_on_close(gpointer data);
 static gboolean _terminal_on_closex(gpointer data);
 static void _terminal_on_new_tab(gpointer data);
+static void _terminal_on_new_window(gpointer data);
 static void _terminal_on_tab_close(GtkWidget * widget, gpointer data);
 
 static void _terminal_on_file_close(gpointer data);
 static void _terminal_on_file_new_tab(gpointer data);
+static void _terminal_on_file_new_window(gpointer data);
 static void _terminal_on_help_about(gpointer data);
 
 /* constants */
 /* menubar */
 static const DesktopMenu _terminal_file_menu[] =
 {
-	{ "_New tab", G_CALLBACK(_terminal_on_file_new_tab), "tab-new",
+	{ "New _tab", G_CALLBACK(_terminal_on_file_new_tab), "tab-new",
 		GDK_CONTROL_MASK, GDK_KEY_T },
+	{ "_New window", G_CALLBACK(_terminal_on_file_new_window), "window-new",
+		GDK_CONTROL_MASK, GDK_KEY_N },
 	{ "", NULL, NULL, 0, 0 },
 	{ "_Close", G_CALLBACK(_terminal_on_file_close), GTK_STOCK_CLOSE,
 		GDK_CONTROL_MASK, GDK_KEY_W },
@@ -116,6 +121,8 @@ static const DesktopMenubar _terminal_menubar[] =
 static DesktopToolbar _terminal_toolbar[] =
 {
 	{ "New tab", G_CALLBACK(_terminal_on_new_tab), "tab-new", 0, 0, NULL },
+	{ "New window", G_CALLBACK(_terminal_on_new_window), "window-new", 0, 0,
+		NULL },
 	{ NULL, NULL, NULL, 0, 0, NULL }
 };
 
@@ -242,6 +249,25 @@ static int _terminal_open_tab(Terminal * terminal)
 }
 
 
+/* terminal_open_window */
+static int _terminal_open_window(Terminal * terminal)
+{
+	char * argv[] = { BINDIR "/terminal", "terminal", NULL };
+	int flags = G_SPAWN_FILE_AND_ARGV_ZERO;
+	GError * error = NULL;
+
+	if(g_spawn_async(NULL, argv, NULL, flags, NULL, NULL, NULL, &error)
+			== FALSE)
+	{
+		fprintf(stderr, "%s: %s: %s\n", "Terminal", argv[0],
+				error->message);
+		g_error_free(error);
+		return -1;
+	}
+	return 0;
+}
+
+
 /* terminal_close_tab */
 static void _terminal_close_tab(Terminal * terminal, unsigned int i)
 {
@@ -322,6 +348,15 @@ static void _terminal_on_new_tab(gpointer data)
 }
 
 
+/* terminal_on_new_window */
+static void _terminal_on_new_window(gpointer data)
+{
+	Terminal * terminal = data;
+
+	_terminal_open_window(terminal);
+}
+
+
 /* terminal_on_tab_close */
 static void _terminal_on_tab_close(GtkWidget * widget, gpointer data)
 {
@@ -354,6 +389,15 @@ static void _terminal_on_file_new_tab(gpointer data)
 	Terminal * terminal = data;
 
 	_terminal_open_tab(terminal);
+}
+
+
+/* terminal_on_file_new_window */
+static void _terminal_on_file_new_window(gpointer data)
+{
+	Terminal * terminal = data;
+
+	_terminal_open_window(terminal);
 }
 
 
