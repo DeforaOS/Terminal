@@ -30,6 +30,7 @@ char const _license[] =
 #include "terminal.h"
 #include "../config.h"
 
+/* constants */
 #ifndef PREFIX
 # define PREFIX		"/usr/local"
 #endif
