@@ -86,14 +86,17 @@ static void _terminal_on_new_tab(gpointer data);
 static void _terminal_on_new_window(gpointer data);
 static void _terminal_on_tab_close(GtkWidget * widget, gpointer data);
 
+#ifndef EMBEDDED
 static void _terminal_on_file_close(gpointer data);
 static void _terminal_on_file_new_tab(gpointer data);
 static void _terminal_on_file_new_window(gpointer data);
 static void _terminal_on_help_about(gpointer data);
 static void _terminal_on_help_contents(gpointer data);
+#endif
 
 
 /* constants */
+#ifndef EMBEDDED
 /* menubar */
 static const DesktopMenu _terminal_file_menu[] =
 {
@@ -126,6 +129,7 @@ static const DesktopMenubar _terminal_menubar[] =
 	{ "_Help", _terminal_help_menu },
 	{ NULL, NULL }
 };
+#endif
 
 static DesktopToolbar _terminal_toolbar[] =
 {
@@ -163,9 +167,11 @@ Terminal * terminal_new(void)
 	g_signal_connect_swapped(terminal->window, "delete-event", G_CALLBACK(
 				_terminal_on_closex), terminal);
 	vbox = gtk_vbox_new(FALSE, 0);
+#ifndef EMBEDDED
 	/* menubar */
 	widget = desktop_menubar_create(_terminal_menubar, terminal, group);
 	gtk_box_pack_start(GTK_BOX(vbox), widget, FALSE, TRUE, 0);
+#endif
 	/* toolbar */
 	widget = desktop_toolbar_create(_terminal_toolbar, terminal, group);
 	gtk_box_pack_start(GTK_BOX(vbox), widget, FALSE, TRUE, 0);
@@ -383,6 +389,7 @@ static void _terminal_on_tab_close(GtkWidget * widget, gpointer data)
 }
 
 
+#ifndef EMBEDDED
 /* terminal_on_file_close */
 static void _terminal_on_file_close(gpointer data)
 {
@@ -438,3 +445,4 @@ static void _terminal_on_help_contents(gpointer data)
 {
 	desktop_help_contents(PACKAGE, "terminal");
 }
+#endif
