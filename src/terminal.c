@@ -26,6 +26,9 @@ char const _license[] =
 #include <libintl.h>
 #include <gtk/gtk.h>
 #include <gdk/gdkkeysyms.h>
+#if GTK_CHECK_VERSION(3, 0, 0)
+# include <gtk/gtkx.h>
+#endif
 #include <System.h>
 #include <Desktop.h>
 #include "terminal.h"
