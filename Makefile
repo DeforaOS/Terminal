@@ -1,6 +1,6 @@
 PACKAGE	= Terminal
 VERSION	= 0.0.0
-SUBDIRS	= data doc src
+SUBDIRS	= data doc po src
 RM	= rm -f
 LN	= ln -f
 TAR	= tar -czvf
@@ -29,6 +29,11 @@ dist:
 		$(PACKAGE)-$(VERSION)/doc/docbook.sh \
 		$(PACKAGE)-$(VERSION)/doc/terminal.xml \
 		$(PACKAGE)-$(VERSION)/doc/project.conf \
+		$(PACKAGE)-$(VERSION)/po/Makefile \
+		$(PACKAGE)-$(VERSION)/po/gettext.sh \
+		$(PACKAGE)-$(VERSION)/po/POTFILES \
+		$(PACKAGE)-$(VERSION)/po/fr.po \
+		$(PACKAGE)-$(VERSION)/po/project.conf \
 		$(PACKAGE)-$(VERSION)/src/terminal.c \
 		$(PACKAGE)-$(VERSION)/src/main.c \
 		$(PACKAGE)-$(VERSION)/src/Makefile \

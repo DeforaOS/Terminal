@@ -1,0 +1,77 @@
+# $Id$
+# Copyright (c) 2013 Pierre Pronchery <khorben@defora.org>
+# This file is distributed under the same license as the Terminal package.
+# Pierre Pronchery <khorben@defora.org>, 2013.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Terminal 0.0.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2013-02-24 04:38+0100\n"
+"PO-Revision-Date: 2013-02-24 04:26+0100\n"
+"Last-Translator: Pierre Pronchery <khorben@defora.org>\n"
+"Language-Team: French\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+
+#: ../src/main.c:74
+msgid "Usage: terminal\n"
+msgstr "Usage: terminal\n"
+
+#: ../src/terminal.c:109
+msgid "New _tab"
+msgstr "Nouvelle _tab"
+
+#: ../src/terminal.c:111
+msgid "_New window"
+msgstr "_Nouvelle fenêtre"
+
+#: ../src/terminal.c:114
+msgid "Close all tabs"
+msgstr "Fermer toutes les tabs"
+
+#: ../src/terminal.c:116
+msgid "_Close"
+msgstr "_Fermer"
+
+#: ../src/terminal.c:123
+msgid "_Contents"
+msgstr "_Sommaire"
+
+#: ../src/terminal.c:126 ../src/terminal.c:129
+msgid "_About"
+msgstr "À _propos"
+
+#: ../src/terminal.c:136
+msgid "_File"
+msgstr "_Fichier"
+
+#: ../src/terminal.c:137
+msgid "_Help"
+msgstr "_Aide"
+
+#: ../src/terminal.c:144
+msgid "New tab"
+msgstr "Nouvelle tab"
+
+#: ../src/terminal.c:146
+msgid "New window"
+msgstr "Nouvelle fenêtre"
+
+#: ../src/terminal.c:175
+msgid "Terminal"
+msgstr "Terminal"
+
+#: ../src/terminal.c:333
+msgid "xterm exited with status "
+msgstr "xterm a quitté avec le code d'erreur "
+
+#: ../src/terminal.c:340
+msgid "xterm exited with signal "
+msgstr "xterm a quitté avec le signal "
+
+#: ../src/terminal.c:450
+msgid "Terminal for the DeforaOS desktop"
+msgstr "Émulateur de terminal pour l'environnement DeforaOS"

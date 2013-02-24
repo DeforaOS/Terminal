@@ -23,12 +23,15 @@ char const _license[] =
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <libintl.h>
 #include <gtk/gtk.h>
 #include <gdk/gdkkeysyms.h>
 #include <System.h>
 #include <Desktop.h>
 #include "terminal.h"
 #include "../config.h"
+#define _(string) gettext(string)
+#define N_(string) (string)
 
 /* constants */
 #ifndef PREFIX
@@ -90,6 +93,7 @@ static void _terminal_on_tab_close(GtkWidget * widget, gpointer data);
 
 #ifndef EMBEDDED
 static void _terminal_on_file_close(gpointer data);
+static void _terminal_on_file_close_all(gpointer data);
 static void _terminal_on_file_new_tab(gpointer data);
 static void _terminal_on_file_new_window(gpointer data);
 static void _terminal_on_help_about(gpointer data);
@@ -102,42 +106,45 @@ static void _terminal_on_help_contents(gpointer data);
 /* menubar */
 static const DesktopMenu _terminal_file_menu[] =
 {
-	{ "New _tab", G_CALLBACK(_terminal_on_file_new_tab), "tab-new",
+	{ N_("New _tab"), G_CALLBACK(_terminal_on_file_new_tab), "tab-new",
 		GDK_CONTROL_MASK, GDK_KEY_T },
-	{ "_New window", G_CALLBACK(_terminal_on_file_new_window), "window-new",
-		GDK_CONTROL_MASK, GDK_KEY_N },
+	{ N_("_New window"), G_CALLBACK(_terminal_on_file_new_window),
+		"window-new", GDK_CONTROL_MASK, GDK_KEY_N },
 	{ "", NULL, NULL, 0, 0 },
-	{ "_Close", G_CALLBACK(_terminal_on_file_close), GTK_STOCK_CLOSE,
+	{ N_("Close all tabs"), G_CALLBACK(_terminal_on_file_close_all), NULL,
+		0, 0 },
+	{ N_("_Close"), G_CALLBACK(_terminal_on_file_close), GTK_STOCK_CLOSE,
 		GDK_CONTROL_MASK, GDK_KEY_W },
 	{ NULL, NULL, NULL, 0, 0 }
 };
 
 static const DesktopMenu _terminal_help_menu[] =
 {
-	{ "_Contents", G_CALLBACK(_terminal_on_help_contents), "help-contents",
-		0, GDK_KEY_F1 },
+	{ N_("_Contents"), G_CALLBACK(_terminal_on_help_contents),
+		"help-contents", 0, GDK_KEY_F1 },
 #if GTK_CHECK_VERSION(2, 6, 0)
-	{ "_About", G_CALLBACK(_terminal_on_help_about), GTK_STOCK_ABOUT, 0,
+	{ N_("_About"), G_CALLBACK(_terminal_on_help_about), GTK_STOCK_ABOUT, 0,
 		0 },
 #else
-	{ "_About", G_CALLBACK(_terminal_on_help_about), NULL, 0, 0 },
+	{ N_("_About"), G_CALLBACK(_terminal_on_help_about), NULL, 0, 0 },
 #endif
 	{ NULL, NULL, NULL, 0, 0 }
 };
 
 static const DesktopMenubar _terminal_menubar[] =
 {
-	{ "_File", _terminal_file_menu },
-	{ "_Help", _terminal_help_menu },
+	{ N_("_File"), _terminal_file_menu },
+	{ N_("_Help"), _terminal_help_menu },
 	{ NULL, NULL }
 };
 #endif
 
 static DesktopToolbar _terminal_toolbar[] =
 {
-	{ "New tab", G_CALLBACK(_terminal_on_new_tab), "tab-new", 0, 0, NULL },
-	{ "New window", G_CALLBACK(_terminal_on_new_window), "window-new", 0, 0,
+	{ N_("New tab"), G_CALLBACK(_terminal_on_new_tab), "tab-new", 0, 0,
 		NULL },
+	{ N_("New window"), G_CALLBACK(_terminal_on_new_window), "window-new",
+		0, 0, NULL },
 	{ NULL, NULL, NULL, 0, 0, NULL }
 };
 
@@ -165,7 +172,7 @@ Terminal * terminal_new(void)
 #if GTK_CHECK_VERSION(2, 6, 0)
 	gtk_window_set_icon_name(GTK_WINDOW(terminal->window), "terminal");
 #endif
-	gtk_window_set_title(GTK_WINDOW(terminal->window), "Terminal");
+	gtk_window_set_title(GTK_WINDOW(terminal->window), _("Terminal"));
 	g_signal_connect_swapped(terminal->window, "delete-event", G_CALLBACK(
 				_terminal_on_closex), terminal);
 	vbox = gtk_vbox_new(FALSE, 0);
@@ -323,14 +330,15 @@ static void _terminal_on_child_watch(GPid pid, gint status, gpointer data)
 	{
 		if(WEXITSTATUS(status) != 0)
 			fprintf(stderr, "%s: %s%u\n", "Terminal",
-					"xterm exited with status ",
+					_("xterm exited with status "),
 					WEXITSTATUS(status));
 		_terminal_close_tab(terminal, i);
 	}
 	else if(WIFSIGNALED(status))
 	{
 		fprintf(stderr, "%s: %s%u\n", "Terminal",
-				"xterm exited with signal ", WTERMSIG(status));
+				_("xterm exited with signal "),
+				WTERMSIG(status));
 		_terminal_close_tab(terminal, i);
 	}
 }
@@ -401,6 +409,15 @@ static void _terminal_on_file_close(gpointer data)
 }
 
 
+/* terminal_on_file_close_all */
+static void _terminal_on_file_close_all(gpointer data)
+{
+	Terminal * terminal = data;
+
+	_terminal_on_close(terminal);
+}
+
+
 /* terminal_on_file_new_tab */
 static void _terminal_on_file_new_tab(gpointer data)
 {
@@ -430,7 +447,7 @@ static void _terminal_on_help_about(gpointer data)
 			GTK_WINDOW(terminal->window));
 	desktop_about_dialog_set_authors(dialog, _authors);
 	desktop_about_dialog_set_comments(dialog,
-			"Terminal for the DeforaOS desktop");
+			_("Terminal for the DeforaOS desktop"));
 	desktop_about_dialog_set_copyright(dialog, _copyright);
 	desktop_about_dialog_set_license(dialog, _license);
 	desktop_about_dialog_set_logo_icon_name(dialog, "terminal");

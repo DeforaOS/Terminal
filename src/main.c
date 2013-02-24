@@ -17,16 +17,31 @@
 
 #include <unistd.h>
 #include <stdio.h>
+#include <locale.h>
+#include <libintl.h>
 #include <gtk/gtk.h>
 #include <System.h>
 #include "terminal.h"
 #include "../config.h"
+#define _(string) gettext(string)
+
+/* constants */
+#ifndef PREFIX
+# define PREFIX		"/usr/local"
+#endif
+#ifndef DATADIR
+# define DATADIR	PREFIX "/share"
+#endif
+#ifndef LOCALEDIR
+# define LOCALEDIR	DATADIR "/locale"
+#endif
 
 
 /* private */
 /* prototypes */
 static int _terminal(void);
 
+static int _error(char const * message, int ret);
 static int _usage(void);
 
 
@@ -44,10 +59,19 @@ static int _terminal(void)
 }
 
 
+/* error */
+static int _error(char const * message, int ret)
+{
+	fputs("terminal: ", stderr);
+	perror(message);
+	return ret;
+}
+
+
 /* usage */
 static int _usage(void)
 {
-	fputs("Usage: terminal\n", stderr);
+	fputs(_("Usage: terminal\n"), stderr);
 	return 1;
 }
 
@@ -59,6 +83,10 @@ int main(int argc, char * argv[])
 {
 	int o;
 
+	if(setlocale(LC_ALL, "") == NULL)
+		_error("setlocale", 1);
+	bindtextdomain(PACKAGE, LOCALEDIR);
+	textdomain(PACKAGE);
 	gtk_init(&argc, &argv);
 	while((o = getopt(argc, argv, "")) != -1)
 		switch(o)
