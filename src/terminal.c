@@ -289,7 +289,7 @@ static int _terminal_open_tab(Terminal * terminal)
 static int _terminal_open_window(Terminal * terminal)
 {
 	char * argv[] = { BINDIR "/terminal", "terminal", NULL };
-	int flags = G_SPAWN_FILE_AND_ARGV_ZERO;
+	GSpawnFlags flags = G_SPAWN_FILE_AND_ARGV_ZERO;
 	GError * error = NULL;
 
 	if(g_spawn_async(NULL, argv, NULL, flags, NULL, NULL, NULL, &error)
