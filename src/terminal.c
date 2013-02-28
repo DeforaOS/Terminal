@@ -234,7 +234,8 @@ static int _terminal_open_tab(Terminal * terminal)
 	char * argv[] = { BINDIR "/xterm", "xterm", "-into", NULL,
 		"-class", "Terminal", NULL };
 	char buf[16];
-	int flags = G_SPAWN_FILE_AND_ARGV_ZERO | G_SPAWN_DO_NOT_REAP_CHILD;
+	GSpawnFlags flags = G_SPAWN_FILE_AND_ARGV_ZERO
+		| G_SPAWN_DO_NOT_REAP_CHILD;
 	GError * error = NULL;
 
 	if((p = realloc(terminal->tabs, sizeof(*p) * (terminal->tabs_cnt + 1)))
