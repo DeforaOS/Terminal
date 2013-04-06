@@ -89,6 +89,7 @@ static void _terminal_close_tab(Terminal * terminal, unsigned int i);
 /* callbacks */
 static void _terminal_on_child_watch(GPid pid, gint status, gpointer data);
 static void _terminal_on_close(gpointer data);
+static void _terminal_on_close_all(gpointer data);
 static gboolean _terminal_on_closex(gpointer data);
 static void _terminal_on_new_tab(gpointer data);
 static void _terminal_on_new_window(gpointer data);
@@ -171,6 +172,7 @@ Terminal * terminal_new(void)
 	group = gtk_accel_group_new();
 	terminal->window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 	gtk_window_add_accel_group(GTK_WINDOW(terminal->window), group);
+	g_object_unref(group);
 	gtk_window_set_default_size(GTK_WINDOW(terminal->window), 600, 400);
 #if GTK_CHECK_VERSION(2, 6, 0)
 	gtk_window_set_icon_name(GTK_WINDOW(terminal->window), "terminal");
@@ -360,6 +362,19 @@ static void _terminal_on_child_watch(GPid pid, gint status, gpointer data)
 static void _terminal_on_close(gpointer data)
 {
 	Terminal * terminal = data;
+	int i;
+
+	i = gtk_notebook_get_current_page(GTK_NOTEBOOK(terminal->notebook));
+	if(i < 0)
+		return;
+	_terminal_close_tab(terminal, i);
+}
+
+
+/* terminal_on_close_all */
+static void _terminal_on_close_all(gpointer data)
+{
+	Terminal * terminal = data;
 
 	gtk_widget_hide(terminal->window);
 	gtk_main_quit();
@@ -367,12 +382,40 @@ static void _terminal_on_close(gpointer data)
 
 
 /* terminal_on_closex */
+static gboolean _on_closex_confirm(Terminal * terminal);
+
 static gboolean _terminal_on_closex(gpointer data)
 {
 	Terminal * terminal = data;
 
-	_terminal_on_close(terminal);
+	if(terminal->tabs_cnt > 1 && _on_closex_confirm(terminal) != TRUE)
+		return TRUE;
+	_terminal_on_close_all(terminal);
 	return TRUE;
+}
+
+static gboolean _on_closex_confirm(Terminal * terminal)
+{
+	GtkWidget * dialog;
+	gboolean res;
+
+	dialog = gtk_message_dialog_new(GTK_WINDOW(terminal->window),
+			GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT,
+			GTK_MESSAGE_QUESTION, GTK_BUTTONS_NONE, "%s",
+#if GTK_CHECK_VERSION(2, 6, 0)
+			_("Question"));
+	gtk_message_dialog_format_secondary_text(GTK_MESSAGE_DIALOG(dialog),
+#endif
+			_("There are multiple tabs opened.\n"
+				"Do you really want to close every tab"
+				" opened in this window?"));
+	gtk_dialog_add_buttons(GTK_DIALOG(dialog),
+			GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
+			GTK_STOCK_CLOSE, GTK_RESPONSE_CLOSE, NULL);
+	gtk_window_set_title(GTK_WINDOW(dialog), _("Question"));
+	res = gtk_dialog_run(GTK_DIALOG(dialog));
+	gtk_widget_destroy(dialog);
+	return (res == GTK_RESPONSE_CLOSE) ? TRUE : FALSE;
 }
 
 
@@ -426,7 +469,7 @@ static void _terminal_on_file_close_all(gpointer data)
 {
 	Terminal * terminal = data;
 
-	_terminal_on_close(terminal);
+	_terminal_on_close_all(terminal);
 }
 
 
