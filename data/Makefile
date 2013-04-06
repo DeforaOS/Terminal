@@ -13,7 +13,7 @@ distclean: clean
 
 install:
 	$(MKDIR) $(DESTDIR)$(PREFIX)/share/applications
-	$(INSTALL) -m 0644 -- terminal.desktop $(DESTDIR)$(PREFIX)/share/applications/terminal.desktop
+	$(INSTALL) -m 0644 terminal.desktop $(DESTDIR)$(PREFIX)/share/applications/terminal.desktop
 
 uninstall:
 	$(RM) -- $(DESTDIR)$(PREFIX)/share/applications/terminal.desktop

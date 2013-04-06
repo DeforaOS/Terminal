@@ -38,7 +38,7 @@ distclean: clean
 
 install: $(TARGETS)
 	$(MKDIR) $(DESTDIR)$(BINDIR)
-	$(INSTALL) -m 0755 -- terminal $(DESTDIR)$(BINDIR)/terminal
+	$(INSTALL) -m 0755 terminal $(DESTDIR)$(BINDIR)/terminal
 
 uninstall:
 	$(RM) -- $(DESTDIR)$(BINDIR)/terminal
