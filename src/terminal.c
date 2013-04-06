@@ -85,11 +85,11 @@ static char const * _authors[] =
 static int _terminal_open_tab(Terminal * terminal);
 static int _terminal_open_window(Terminal * terminal);
 static void _terminal_close_tab(Terminal * terminal, unsigned int i);
+static void _terminal_close_all(Terminal * terminal);
 
 /* callbacks */
 static void _terminal_on_child_watch(GPid pid, gint status, gpointer data);
 static void _terminal_on_close(gpointer data);
-static void _terminal_on_close_all(gpointer data);
 static gboolean _terminal_on_closex(gpointer data);
 static void _terminal_on_new_tab(gpointer data);
 static void _terminal_on_new_window(gpointer data);
@@ -115,10 +115,10 @@ static const DesktopMenu _terminal_file_menu[] =
 	{ N_("_New window"), G_CALLBACK(_terminal_on_file_new_window),
 		"window-new", GDK_CONTROL_MASK, GDK_KEY_N },
 	{ "", NULL, NULL, 0, 0 },
-	{ N_("Close all tabs"), G_CALLBACK(_terminal_on_file_close_all), NULL,
-		0, 0 },
 	{ N_("_Close"), G_CALLBACK(_terminal_on_file_close), GTK_STOCK_CLOSE,
 		GDK_CONTROL_MASK, GDK_KEY_W },
+	{ N_("Close all tabs"), G_CALLBACK(_terminal_on_file_close_all), NULL,
+		0, 0 },
 	{ NULL, NULL, NULL, 0, 0 }
 };
 
@@ -275,7 +275,7 @@ static int _terminal_open_tab(Terminal * terminal)
 	if(g_spawn_async(NULL, argv, NULL, flags, NULL, NULL, &p->pid, &error)
 			== FALSE)
 	{
-		fprintf(stderr, "%s: %s: %s\n", "Terminal", argv[1],
+		fprintf(stderr, "%s: %s: %s\n", "terminal", argv[1],
 				error->message);
 		g_error_free(error);
 		return -1;
@@ -297,12 +297,20 @@ static int _terminal_open_window(Terminal * terminal)
 	if(g_spawn_async(NULL, argv, NULL, flags, NULL, NULL, NULL, &error)
 			== FALSE)
 	{
-		fprintf(stderr, "%s: %s: %s\n", "Terminal", argv[0],
+		fprintf(stderr, "%s: %s: %s\n", "terminal", argv[0],
 				error->message);
 		g_error_free(error);
 		return -1;
 	}
 	return 0;
+}
+
+
+/* terminal_close_all */
+static void _terminal_close_all(Terminal * terminal)
+{
+	gtk_widget_hide(terminal->window);
+	gtk_main_quit();
 }
 
 
@@ -338,19 +346,19 @@ static void _terminal_on_child_watch(GPid pid, gint status, gpointer data)
 	for(i = 0; i < terminal->tabs_cnt; i++)
 		if(terminal->tabs[i].pid == pid)
 			break;
-	if(i == terminal->tabs_cnt)
+	if(i >= terminal->tabs_cnt)
 		return;
 	if(WIFEXITED(status))
 	{
 		if(WEXITSTATUS(status) != 0)
-			fprintf(stderr, "%s: %s%u\n", "Terminal",
+			fprintf(stderr, "%s: %s%u\n", "terminal",
 					_("xterm exited with status "),
 					WEXITSTATUS(status));
 		_terminal_close_tab(terminal, i);
 	}
 	else if(WIFSIGNALED(status))
 	{
-		fprintf(stderr, "%s: %s%u\n", "Terminal",
+		fprintf(stderr, "%s: %s%u\n", "terminal",
 				_("xterm exited with signal "),
 				WTERMSIG(status));
 		_terminal_close_tab(terminal, i);
@@ -371,16 +379,6 @@ static void _terminal_on_close(gpointer data)
 }
 
 
-/* terminal_on_close_all */
-static void _terminal_on_close_all(gpointer data)
-{
-	Terminal * terminal = data;
-
-	gtk_widget_hide(terminal->window);
-	gtk_main_quit();
-}
-
-
 /* terminal_on_closex */
 static gboolean _on_closex_confirm(Terminal * terminal);
 
@@ -390,7 +388,7 @@ static gboolean _terminal_on_closex(gpointer data)
 
 	if(terminal->tabs_cnt > 1 && _on_closex_confirm(terminal) != TRUE)
 		return TRUE;
-	_terminal_on_close_all(terminal);
+	_terminal_close_all(terminal);
 	return TRUE;
 }
 
@@ -401,12 +399,12 @@ static gboolean _on_closex_confirm(Terminal * terminal)
 
 	dialog = gtk_message_dialog_new(GTK_WINDOW(terminal->window),
 			GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT,
-			GTK_MESSAGE_QUESTION, GTK_BUTTONS_NONE, "%s",
+			GTK_MESSAGE_QUESTION, GTK_BUTTONS_NONE,
 #if GTK_CHECK_VERSION(2, 6, 0)
-			_("Question"));
+			"%s", _("Question"));
 	gtk_message_dialog_format_secondary_text(GTK_MESSAGE_DIALOG(dialog),
 #endif
-			_("There are multiple tabs opened.\n"
+			"%s", _("There are multiple tabs opened.\n"
 				"Do you really want to close every tab"
 				" opened in this window?"));
 	gtk_dialog_add_buttons(GTK_DIALOG(dialog),
@@ -447,7 +445,7 @@ static void _terminal_on_tab_close(GtkWidget * widget, gpointer data)
 	for(i = 0; i < terminal->tabs_cnt; i++)
 		if(terminal->tabs[i].label == widget)
 			break;
-	if(i == terminal->tabs_cnt)
+	if(i >= terminal->tabs_cnt)
 		/* should not happen */
 		return;
 	_terminal_close_tab(terminal, i);
@@ -469,7 +467,7 @@ static void _terminal_on_file_close_all(gpointer data)
 {
 	Terminal * terminal = data;
 
-	_terminal_on_close_all(terminal);
+	_terminal_close_all(terminal);
 }
 
 
