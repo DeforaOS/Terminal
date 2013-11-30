@@ -13,9 +13,9 @@ distclean: clean
 
 install:
 	$(MKDIR) $(DESTDIR)$(PREFIX)/share/applications
-	$(INSTALL) -m 0644 terminal.desktop $(DESTDIR)$(PREFIX)/share/applications/terminal.desktop
+	$(INSTALL) -m 0644 deforaos-terminal.desktop $(DESTDIR)$(PREFIX)/share/applications/deforaos-terminal.desktop
 
 uninstall:
-	$(RM) -- $(DESTDIR)$(PREFIX)/share/applications/terminal.desktop
+	$(RM) -- $(DESTDIR)$(PREFIX)/share/applications/deforaos-terminal.desktop
 
 .PHONY: all clean distclean install uninstall
