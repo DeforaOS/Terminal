@@ -52,6 +52,8 @@ typedef struct _TerminalTab TerminalTab;
 
 struct _Terminal
 {
+	char * shell;
+
 	/* internal */
 	TerminalTab * tabs;
 	size_t tabs_cnt;
@@ -156,7 +158,7 @@ static DesktopToolbar _terminal_toolbar[] =
 /* public */
 /* functions */
 /* terminal_new */
-Terminal * terminal_new(void)
+Terminal * terminal_new(char const * shell)
 {
 	Terminal * terminal;
 	GtkAccelGroup * group;
@@ -165,9 +167,16 @@ Terminal * terminal_new(void)
 
 	if((terminal = object_new(sizeof(*terminal))) == NULL)
 		return NULL;
+	terminal->shell = (shell != NULL) ? strdup(shell) : NULL;
 	terminal->tabs = NULL;
 	terminal->tabs_cnt = 0;
 	terminal->window = NULL;
+	/* check for errors */
+	if(shell != NULL && terminal->shell == NULL)
+	{
+		terminal_delete(terminal);
+		return NULL;
+	}
 	/* widgets */
 	group = gtk_accel_group_new();
 	terminal->window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
@@ -221,6 +230,7 @@ void terminal_delete(Terminal * terminal)
 	if(terminal->window != NULL)
 		gtk_widget_destroy(terminal->window);
 	free(terminal->tabs);
+	free(terminal->shell);
 	object_delete(terminal);
 }
 
@@ -234,7 +244,7 @@ static int _terminal_open_tab(Terminal * terminal)
 	TerminalTab * p;
 	GtkWidget * widget;
 	char * argv[] = { BINDIR "/xterm", "xterm", "-into", NULL,
-		"-class", "Terminal", NULL };
+		"-class", "Terminal", NULL, NULL };
 	char buf[16];
 	GSpawnFlags flags = G_SPAWN_FILE_AND_ARGV_ZERO
 		| G_SPAWN_DO_NOT_REAP_CHILD;
@@ -272,6 +282,7 @@ static int _terminal_open_tab(Terminal * terminal)
 	snprintf(buf, sizeof(buf), "%u", gtk_socket_get_id(
 				GTK_SOCKET(p->socket)));
 	argv[3] = buf;
+	argv[6] = terminal->shell;
 	if(g_spawn_async(NULL, argv, NULL, flags, NULL, NULL, &p->pid, &error)
 			== FALSE)
 	{

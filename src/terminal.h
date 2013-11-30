@@ -27,7 +27,7 @@ typedef struct _Terminal Terminal;
 
 /* functions */
 /* essential */
-Terminal * terminal_new(void);
+Terminal * terminal_new(char const * shell);
 void terminal_delete(Terminal * terminal);
 
 #endif /* !TERMINAL_TERMINAL_H */

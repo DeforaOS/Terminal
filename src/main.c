@@ -39,7 +39,7 @@
 
 /* private */
 /* prototypes */
-static int _terminal(void);
+static int _terminal(char const * shell);
 
 static int _error(char const * message, int ret);
 static int _usage(void);
@@ -47,11 +47,11 @@ static int _usage(void);
 
 /* functions */
 /* terminal */
-static int _terminal(void)
+static int _terminal(char const * shell)
 {
 	Terminal * terminal;
 
-	if((terminal = terminal_new()) == NULL)
+	if((terminal = terminal_new(shell)) == NULL)
 		return error_print(PACKAGE);
 	gtk_main();
 	terminal_delete(terminal);
@@ -71,7 +71,7 @@ static int _error(char const * message, int ret)
 /* usage */
 static int _usage(void)
 {
-	fputs(_("Usage: terminal\n"), stderr);
+	fputs(_("Usage: terminal [shell]\n"), stderr);
 	return 1;
 }
 
@@ -82,6 +82,7 @@ static int _usage(void)
 int main(int argc, char * argv[])
 {
 	int o;
+	char const * shell = NULL;
 
 	if(setlocale(LC_ALL, "") == NULL)
 		_error("setlocale", 1);
@@ -94,7 +95,9 @@ int main(int argc, char * argv[])
 			default:
 				return _usage();
 		}
-	if(optind != argc)
+	if(argc - optind == 1)
+		shell = argv[optind];
+	else if(optind != argc)
 		return _usage();
-	return (_terminal() == 0) ? 0 : 2;
+	return (_terminal(shell) == 0) ? 0 : 2;
 }
