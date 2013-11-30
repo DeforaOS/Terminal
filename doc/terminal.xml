@@ -49,6 +49,7 @@
 	<refsynopsisdiv>
 		<cmdsynopsis>
 			<command>&name;</command>
+			<arg><replaceable>shell</replaceable></arg>
 		</cmdsynopsis>
 	</refsynopsisdiv>
 	<refsect1 id="description">
@@ -57,7 +58,8 @@
 	</refsect1>
 	<refsect1 id="options">
 		<title>Options</title>
-		<para>This program does not accept any options from the command line.</para>
+		<para>The path to an alternate default shell can be given as an argument on
+			the command line.</para>
 	</refsect1>
 	<refsect1 id="bugs">
 		<title>Bugs</title>
