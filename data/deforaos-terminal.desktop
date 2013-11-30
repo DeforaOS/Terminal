@@ -1,6 +1,7 @@
 [Desktop Entry]
 Name=Terminal
 Comment=Terminal emulator
+TryExec=terminal
 Exec=terminal
 Icon=terminal
 Type=Application
