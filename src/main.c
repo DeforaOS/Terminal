@@ -26,6 +26,9 @@
 #define _(string) gettext(string)
 
 /* constants */
+#ifndef PROGNAME
+# define PROGNAME	"terminal"
+#endif
 #ifndef PREFIX
 # define PREFIX		"/usr/local"
 #endif
@@ -62,7 +65,7 @@ static int _terminal(char const * shell)
 /* error */
 static int _error(char const * message, int ret)
 {
-	fputs("terminal: ", stderr);
+	fputs(PROGNAME ": ", stderr);
 	perror(message);
 	return ret;
 }
@@ -71,7 +74,7 @@ static int _error(char const * message, int ret)
 /* usage */
 static int _usage(void)
 {
-	fputs(_("Usage: terminal [shell]\n"), stderr);
+	fprintf(stderr, _("Usage: %s [shell]\n"), PROGNAME);
 	return 1;
 }
 

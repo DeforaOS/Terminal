@@ -37,6 +37,9 @@ static char const _license[] =
 #define N_(string) (string)
 
 /* constants */
+#ifndef PROGNAME
+# define PROGNAME	"terminal"
+#endif
 #ifndef PREFIX
 # define PREFIX		"/usr/local"
 #endif
@@ -286,7 +289,7 @@ static int _terminal_open_tab(Terminal * terminal)
 	if(g_spawn_async(NULL, argv, NULL, flags, NULL, NULL, &p->pid, &error)
 			== FALSE)
 	{
-		fprintf(stderr, "%s: %s: %s\n", "terminal", argv[1],
+		fprintf(stderr, "%s: %s: %s\n", PROGNAME, argv[1],
 				error->message);
 		g_error_free(error);
 		return -1;
@@ -301,14 +304,14 @@ static int _terminal_open_tab(Terminal * terminal)
 /* terminal_open_window */
 static int _terminal_open_window(Terminal * terminal)
 {
-	char * argv[] = { BINDIR "/terminal", "terminal", NULL };
+	char * argv[] = { BINDIR "/" PROGNAME, PROGNAME, NULL };
 	GSpawnFlags flags = G_SPAWN_FILE_AND_ARGV_ZERO;
 	GError * error = NULL;
 
 	if(g_spawn_async(NULL, argv, NULL, flags, NULL, NULL, NULL, &error)
 			== FALSE)
 	{
-		fprintf(stderr, "%s: %s: %s\n", "terminal", argv[0],
+		fprintf(stderr, "%s: %s: %s\n", PROGNAME, argv[0],
 				error->message);
 		g_error_free(error);
 		return -1;
@@ -362,14 +365,14 @@ static void _terminal_on_child_watch(GPid pid, gint status, gpointer data)
 	if(WIFEXITED(status))
 	{
 		if(WEXITSTATUS(status) != 0)
-			fprintf(stderr, "%s: %s%u\n", "terminal",
+			fprintf(stderr, "%s: %s%u\n", PROGNAME,
 					_("xterm exited with status "),
 					WEXITSTATUS(status));
 		_terminal_close_tab(terminal, i);
 	}
 	else if(WIFSIGNALED(status))
 	{
-		fprintf(stderr, "%s: %s%u\n", "terminal",
+		fprintf(stderr, "%s: %s%u\n", PROGNAME,
 				_("xterm exited with signal "),
 				WTERMSIG(status));
 		_terminal_close_tab(terminal, i);
@@ -526,6 +529,6 @@ static void _terminal_on_help_about(gpointer data)
 /* terminal_on_help_contents */
 static void _terminal_on_help_contents(gpointer data)
 {
-	desktop_help_contents(PACKAGE, "terminal");
+	desktop_help_contents(PACKAGE, PROGNAME);
 }
 #endif
