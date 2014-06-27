@@ -1,6 +1,6 @@
 /* $Id$ */
 static char const _copyright[] =
-"Copyright © 2012-2013 Pierre Pronchery <khorben@defora.org>";
+"Copyright © 2012-2014 Pierre Pronchery <khorben@defora.org>";
 /* This file is part of DeforaOS Desktop Terminal */
 static char const _license[] =
 "This program is free software: you can redistribute it and/or modify\n"
@@ -518,7 +518,7 @@ static void _terminal_on_help_about(gpointer data)
 	desktop_about_dialog_set_copyright(dialog, _copyright);
 	desktop_about_dialog_set_license(dialog, _license);
 	desktop_about_dialog_set_logo_icon_name(dialog, "terminal");
-	desktop_about_dialog_set_name(dialog, PACKAGE);
+	desktop_about_dialog_set_program_name(dialog, PACKAGE);
 	desktop_about_dialog_set_version(dialog, VERSION);
 	desktop_about_dialog_set_website(dialog, "http://www.defora.org/");
 	gtk_dialog_run(GTK_DIALOG(dialog));
