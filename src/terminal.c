@@ -248,7 +248,7 @@ static int _terminal_open_tab(Terminal * terminal)
 	GtkWidget * widget;
 	char * argv[] = { BINDIR "/xterm", "xterm", "-into", NULL,
 		"-class", "Terminal", NULL, NULL };
-	char buf[16];
+	char buf[32];
 	GSpawnFlags flags = G_SPAWN_FILE_AND_ARGV_ZERO
 		| G_SPAWN_DO_NOT_REAP_CHILD;
 	GError * error = NULL;
@@ -282,7 +282,7 @@ static int _terminal_open_tab(Terminal * terminal)
 			p->socket, TRUE);
 #endif
 	/* launch xterm */
-	snprintf(buf, sizeof(buf), "%u", gtk_socket_get_id(
+	snprintf(buf, sizeof(buf), "%lu", gtk_socket_get_id(
 				GTK_SOCKET(p->socket)));
 	argv[3] = buf;
 	argv[6] = terminal->shell;
