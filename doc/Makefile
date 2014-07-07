@@ -12,7 +12,7 @@ all: $(TARGETS)
 terminal.1: terminal.xml
 	./docbook.sh -P "$(PREFIX)" -- "terminal.1"
 
-terminal.html: terminal.xml
+terminal.html: manual.css.xml terminal.css.xml terminal.xml
 	./docbook.sh -P "$(PREFIX)" -- "terminal.html"
 
 clean:
