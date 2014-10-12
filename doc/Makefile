@@ -17,6 +17,7 @@ terminal.html: manual.css.xml terminal.css.xml terminal.xml
 
 clean:
 	$(RM) -- $(terminal.1_OBJS) $(terminal.html_OBJS)
+	./docbook.sh -c -P "$(PREFIX)" -- "terminal.1"
 	./docbook.sh -c -P "$(PREFIX)" -- "terminal.html"
 
 distclean: clean

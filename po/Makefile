@@ -17,6 +17,7 @@ fr.mo: Terminal.pot fr.po
 
 clean:
 	$(RM) -- $(Terminal.pot_OBJS) $(fr.mo_OBJS)
+	./gettext.sh -c -P "$(PREFIX)" -- "Terminal.pot"
 	./gettext.sh -c -P "$(PREFIX)" -- "fr.mo"
 
 distclean: clean
