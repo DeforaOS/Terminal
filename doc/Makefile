@@ -1,4 +1,5 @@
-TARGETS	= terminal.1 terminal.html
+TARGETS	= $(OBJDIR)terminal.1 $(OBJDIR)terminal.html
+OBJDIR	=
 PREFIX	= /usr/local
 DESTDIR	=
 RM	= rm -f
@@ -9,11 +10,11 @@ INSTALL	= install
 
 all: $(TARGETS)
 
-terminal.1: terminal.xml
-	./docbook.sh -P "$(PREFIX)" -- "terminal.1"
+$(OBJDIR)terminal.1: terminal.xml
+	./docbook.sh -P "$(PREFIX)" -- "$(OBJDIR)terminal.1"
 
-terminal.html: manual.css.xml terminal.css.xml terminal.xml
-	./docbook.sh -P "$(PREFIX)" -- "terminal.html"
+$(OBJDIR)terminal.html: manual.css.xml terminal.css.xml terminal.xml
+	./docbook.sh -P "$(PREFIX)" -- "$(OBJDIR)terminal.html"
 
 clean:
 	$(RM) -- $(terminal.1_OBJS) $(terminal.html_OBJS)
@@ -24,8 +25,8 @@ distclean: clean
 	$(RM) -- $(TARGETS)
 
 install: $(TARGETS)
-	./docbook.sh -P "$(DESTDIR)$(PREFIX)" -i -- "terminal.1"
-	./docbook.sh -P "$(DESTDIR)$(PREFIX)" -i -- "terminal.html"
+	./docbook.sh -P "$(DESTDIR)$(PREFIX)" -i -- "$(OBJDIR)terminal.1"
+	./docbook.sh -P "$(DESTDIR)$(PREFIX)" -i -- "$(OBJDIR)terminal.html"
 
 uninstall:
 	./docbook.sh -P "$(DESTDIR)$(PREFIX)" -u -- "terminal.1"

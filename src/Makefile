@@ -1,4 +1,5 @@
-TARGETS	= terminal
+TARGETS	= $(OBJDIR)terminal
+OBJDIR	=
 PREFIX	= /usr/local
 DESTDIR	=
 BINDIR	= $(PREFIX)/bin
@@ -17,18 +18,18 @@ INSTALL	= install
 
 all: $(TARGETS)
 
-terminal_OBJS = terminal.o main.o
+terminal_OBJS = $(OBJDIR)terminal.o $(OBJDIR)main.o
 terminal_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
 terminal_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 
-terminal: $(terminal_OBJS)
-	$(CC) -o terminal $(terminal_OBJS) $(terminal_LDFLAGS)
+$(OBJDIR)terminal: $(terminal_OBJS)
+	$(CC) -o $(OBJDIR)terminal $(terminal_OBJS) $(terminal_LDFLAGS)
 
-terminal.o: terminal.c terminal.h ../config.h
-	$(CC) -D PREFIX=\"$(PREFIX)\" $(terminal_CFLAGS) -c terminal.c
+$(OBJDIR)terminal.o: terminal.c terminal.h ../config.h
+	$(CC) -D PREFIX=\"$(PREFIX)\" $(terminal_CFLAGS) -o $(OBJDIR)terminal.o -c terminal.c
 
-main.o: main.c terminal.h ../config.h
-	$(CC) $(terminal_CFLAGS) -c main.c
+$(OBJDIR)main.o: main.c terminal.h ../config.h
+	$(CC) $(terminal_CFLAGS) -o $(OBJDIR)main.o -c main.c
 
 clean:
 	$(RM) -- $(terminal_OBJS)
@@ -38,7 +39,7 @@ distclean: clean
 
 install: $(TARGETS)
 	$(MKDIR) $(DESTDIR)$(BINDIR)
-	$(INSTALL) -m 0755 terminal $(DESTDIR)$(BINDIR)/terminal
+	$(INSTALL) -m 0755 $(OBJDIR)terminal $(DESTDIR)$(BINDIR)/terminal
 
 uninstall:
 	$(RM) -- $(DESTDIR)$(BINDIR)/terminal
