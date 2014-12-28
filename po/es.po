@@ -1,91 +1,89 @@
 # $Id$
-# Copyright (c) 2013-2014 Pierre Pronchery <khorben@defora.org>
-# French translations for Terminal package.
+# Copyright (c) 2014 Pierre Pronchery <khorben@defora.org>
+# Spanish translations for Terminal package.
 # This file is distributed under the same license as the Terminal package.
-# Pierre Pronchery <khorben@defora.org>, 2013.
+# Pierre Pronchery <khorben@defora.org>, 2014.
 #
 msgid ""
 msgstr ""
 "Project-Id-Version: Terminal 0.0.0\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2014-12-28 17:00+0100\n"
-"PO-Revision-Date: 2013-02-24 04:26+0100\n"
+"PO-Revision-Date: 2014-12-28 17:03+0100\n"
 "Last-Translator: Pierre Pronchery <khorben@defora.org>\n"
-"Language-Team: French\n"
+"Language-Team: Spanish\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
 #: ../src/main.c:77
 #, c-format
 msgid "Usage: %s [shell]\n"
-msgstr "Usage: %s [shell]\n"
+msgstr ""
 
 #: ../src/terminal.c:118
 msgid "New _tab"
-msgstr "Nouvelle _tab"
+msgstr ""
 
 #: ../src/terminal.c:120
 msgid "_New window"
-msgstr "_Nouvelle fenêtre"
+msgstr ""
 
 #: ../src/terminal.c:123
 msgid "_Close"
-msgstr "_Fermer"
+msgstr ""
 
 #: ../src/terminal.c:125
 msgid "Close all tabs"
-msgstr "Fermer toutes les tabs"
+msgstr ""
 
 #: ../src/terminal.c:132
 msgid "_Contents"
-msgstr "_Sommaire"
+msgstr ""
 
 #: ../src/terminal.c:135 ../src/terminal.c:138
 msgid "_About"
-msgstr "À _propos"
+msgstr ""
 
 #: ../src/terminal.c:145
 msgid "_File"
-msgstr "_Fichier"
+msgstr ""
 
 #: ../src/terminal.c:146
 msgid "_Help"
-msgstr "_Aide"
+msgstr ""
 
 #: ../src/terminal.c:153
 msgid "New tab"
-msgstr "Nouvelle tab"
+msgstr ""
 
 #: ../src/terminal.c:155
 msgid "New window"
-msgstr "Nouvelle fenêtre"
+msgstr ""
 
 #: ../src/terminal.c:192
 msgid "Terminal"
-msgstr "Terminal"
+msgstr ""
 
 #: ../src/terminal.c:369
 msgid "xterm exited with status "
-msgstr "xterm a quitté avec le code d'erreur "
+msgstr ""
 
 #: ../src/terminal.c:376
 msgid "xterm exited with signal "
-msgstr "xterm a quitté avec le signal "
+msgstr ""
 
 #: ../src/terminal.c:418 ../src/terminal.c:427
 msgid "Question"
-msgstr "Question"
+msgstr ""
 
 #: ../src/terminal.c:421
 msgid ""
 "There are multiple tabs opened.\n"
 "Do you really want to close every tab opened in this window?"
 msgstr ""
-"Plusieurs onglets sont ouverts.\n"
-"Voulez-vous vraiment fermer tous les onglets de cette fenêtre ?"
 
 #: ../src/terminal.c:517
 msgid "Terminal for the DeforaOS desktop"
-msgstr "Émulateur de terminal pour l'environnement DeforaOS"
+msgstr ""
