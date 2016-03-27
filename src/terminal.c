@@ -123,7 +123,7 @@ static const DesktopMenu _terminal_file_menu[] =
 	{ N_("_Close"), G_CALLBACK(_terminal_on_file_close), GTK_STOCK_CLOSE,
 		GDK_CONTROL_MASK, GDK_KEY_W },
 	{ N_("Close all tabs"), G_CALLBACK(_terminal_on_file_close_all), NULL,
-		0, 0 },
+		GDK_SHIFT_MASK | GDK_CONTROL_MASK, GDK_KEY_W },
 	{ NULL, NULL, NULL, 0, 0 }
 };
 
