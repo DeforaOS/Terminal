@@ -39,6 +39,7 @@ static char const _license[] =
 #include <stdio.h>
 #include <string.h>
 #include <signal.h>
+#include <errno.h>
 #include <libintl.h>
 #include <gtk/gtk.h>
 #include <gdk/gdkkeysyms.h>
@@ -451,7 +452,9 @@ static void _terminal_close_all(Terminal * terminal)
 		pid[i] = terminal->tabs[i]->pid;
 	/* kill the remaining tabs */
 	for(i = 0; i < cnt; i++)
-		kill(pid[i], SIGTERM);
+		if(kill(pid[i], SIGTERM) != 0)
+			fprintf(stderr, "%s: %s: %s\n", PROGNAME, "kill",
+					strerror(errno));
 	free(pid);
 }
 
