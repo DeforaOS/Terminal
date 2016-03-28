@@ -372,7 +372,7 @@ static int _terminal_open_tab(Terminal * terminal)
 	gtk_box_pack_start(GTK_BOX(tab->widget), widget, FALSE, TRUE, 0);
 	widget = gtk_button_new();
 	g_signal_connect_swapped(widget, "clicked", G_CALLBACK(
-				_terminal_on_tab_close), terminal);
+				_terminal_on_tab_close), tab);
 	gtk_container_add(GTK_CONTAINER(widget), gtk_image_new_from_stock(
 				GTK_STOCK_CLOSE, GTK_ICON_SIZE_MENU));
 	gtk_button_set_relief(GTK_BUTTON(widget), GTK_RELIEF_NONE);
@@ -590,18 +590,16 @@ static void _terminal_on_new_window(gpointer data)
 /* terminal_on_tab_close */
 static void _terminal_on_tab_close(gpointer data)
 {
-	Terminal * terminal = data;
-	GtkWidget * widget;
+	TerminalTab * tab = data;
 	size_t i;
 
-	widget = gtk_widget_get_parent(widget);
-	for(i = 0; i < terminal->tabs_cnt; i++)
-		if(terminal->tabs[i]->widget == widget)
+	for(i = 0; i < tab->terminal->tabs_cnt; i++)
+		if(tab->terminal->tabs[i]->widget == tab->widget)
 			break;
-	if(i >= terminal->tabs_cnt)
+	if(i >= tab->terminal->tabs_cnt)
 		/* should not happen */
 		return;
-	_terminal_close_tab(terminal, i);
+	_terminal_close_tab(tab->terminal, i);
 }
 
 
