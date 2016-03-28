@@ -76,7 +76,7 @@ struct _Terminal
 	unsigned int login;
 
 	/* internal */
-	TerminalTab * tabs;
+	TerminalTab ** tabs;
 	size_t tabs_cnt;
 
 	/* widgets */
@@ -91,6 +91,8 @@ struct _Terminal
 
 struct _TerminalTab
 {
+	Terminal * terminal;
+	GtkWidget * widget;
 	GtkWidget * label;
 	GtkWidget * socket;
 	GPid pid;
@@ -285,10 +287,11 @@ void terminal_delete(Terminal * terminal)
 
 	for(i = 0; i < terminal->tabs_cnt; i++)
 	{
-		if(terminal->tabs[i].source > 0)
-			g_source_remove(terminal->tabs[i].source);
-		if(terminal->tabs[i].pid > 0)
-			g_spawn_close_pid(terminal->tabs[i].pid);
+		if(terminal->tabs[i]->source > 0)
+			g_source_remove(terminal->tabs[i]->source);
+		if(terminal->tabs[i]->pid > 0)
+			g_spawn_close_pid(terminal->tabs[i]->pid);
+		free(terminal->tabs[i]);
 	}
 	/* FIXME also take care of the sub-processes */
 	if(terminal->window != NULL)
@@ -332,7 +335,8 @@ void terminal_set_fullscreen(Terminal * terminal, gboolean fullscreen)
 /* terminal_open_tab */
 static int _terminal_open_tab(Terminal * terminal)
 {
-	TerminalTab * p;
+	TerminalTab ** p;
+	TerminalTab * tab;
 	GtkWidget * widget;
 	char * argv[] = { BINDIR "/xterm", "xterm", "-into", NULL,
 		"-class", "Terminal", NULL, NULL, NULL };
@@ -345,33 +349,36 @@ static int _terminal_open_tab(Terminal * terminal)
 			== NULL)
 		return -1;
 	terminal->tabs = p;
-	p = &terminal->tabs[terminal->tabs_cnt++];
+	if((tab = malloc(sizeof(*tab))) == NULL)
+		return -1;
+	terminal->tabs[terminal->tabs_cnt++] = tab;
 	/* create the tab */
-	p->socket = gtk_socket_new();
+	tab->terminal = terminal;
+	tab->socket = gtk_socket_new();
 #if GTK_CHECK_VERSION(3, 0, 0)
-	p->label = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+	tab->widget = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
 #else
-	p->label = gtk_hbox_new(FALSE, 4);
+	tab->widget = gtk_hbox_new(FALSE, 4);
 #endif
-	gtk_box_pack_start(GTK_BOX(p->label), gtk_label_new("xterm"), TRUE,
-			TRUE, 0);
+	tab->label = gtk_label_new(_("xterm"));
+	gtk_box_pack_start(GTK_BOX(tab->widget), tab->label, TRUE, TRUE, 0);
 	widget = gtk_button_new();
 	g_signal_connect(widget, "clicked", G_CALLBACK(_terminal_on_tab_close),
 			terminal);
 	gtk_container_add(GTK_CONTAINER(widget), gtk_image_new_from_stock(
 				GTK_STOCK_CLOSE, GTK_ICON_SIZE_MENU));
 	gtk_button_set_relief(GTK_BUTTON(widget), GTK_RELIEF_NONE);
-	gtk_box_pack_start(GTK_BOX(p->label), widget, FALSE, TRUE, 0);
-	gtk_widget_show_all(p->label);
-	gtk_notebook_append_page(GTK_NOTEBOOK(terminal->notebook), p->socket,
-			p->label);
+	gtk_box_pack_start(GTK_BOX(tab->widget), widget, FALSE, TRUE, 0);
+	gtk_widget_show_all(tab->widget);
+	gtk_notebook_append_page(GTK_NOTEBOOK(terminal->notebook), tab->socket,
+			tab->widget);
 #if GTK_CHECK_VERSION(2, 10, 0)
 	gtk_notebook_set_tab_reorderable(GTK_NOTEBOOK(terminal->notebook),
-			p->socket, TRUE);
+			tab->socket, TRUE);
 #endif
 	/* launch xterm */
 	snprintf(buf, sizeof(buf), "%lu", gtk_socket_get_id(
-				GTK_SOCKET(p->socket)));
+				GTK_SOCKET(tab->socket)));
 	argv[3] = buf;
 	if(terminal->login)
 	{
@@ -381,16 +388,16 @@ static int _terminal_open_tab(Terminal * terminal)
 	else
 		argv[6] = terminal->shell;
 	if(g_spawn_async(terminal->directory, argv, NULL, flags, NULL, NULL,
-				&p->pid, &error) == FALSE)
+				&tab->pid, &error) == FALSE)
 	{
 		fprintf(stderr, "%s: %s: %s\n", PROGNAME, argv[1],
 				error->message);
 		g_error_free(error);
 		return -1;
 	}
-	p->source = g_child_watch_add(p->pid, _terminal_on_child_watch,
+	tab->source = g_child_watch_add(tab->pid, _terminal_on_child_watch,
 			terminal);
-	gtk_widget_show(p->socket);
+	gtk_widget_show(tab->socket);
 	return 0;
 }
 
@@ -433,7 +440,7 @@ static void _terminal_close_all(Terminal * terminal)
 	}
 	cnt = terminal->tabs_cnt;
 	for(i = 0; i < cnt; i++)
-		pid[i] = terminal->tabs[i].pid;
+		pid[i] = terminal->tabs[i]->pid;
 	/* kill the remaining tabs */
 	for(i = 0; i < cnt; i++)
 		kill(pid[i], SIGTERM);
@@ -447,10 +454,11 @@ static void _terminal_close_tab(Terminal * terminal, unsigned int i)
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s(%u)\n", __func__, i);
 #endif
-	if(terminal->tabs[i].source > 0)
-		g_source_remove(terminal->tabs[i].source);
-	if(terminal->tabs[i].pid >= 0)
-		g_spawn_close_pid(terminal->tabs[i].pid);
+	if(terminal->tabs[i]->source > 0)
+		g_source_remove(terminal->tabs[i]->source);
+	if(terminal->tabs[i]->pid >= 0)
+		g_spawn_close_pid(terminal->tabs[i]->pid);
+	free(terminal->tabs[i]);
 	gtk_notebook_remove_page(GTK_NOTEBOOK(terminal->notebook), i);
 	memmove(&terminal->tabs[i], &terminal->tabs[i + 1],
 			(terminal->tabs_cnt - (i + 1))
@@ -471,7 +479,7 @@ static void _terminal_on_child_watch(GPid pid, gint status, gpointer data)
 	fprintf(stderr, "DEBUG: %s(%d, %d)\n", __func__, pid, status);
 #endif
 	for(i = 0; i < terminal->tabs_cnt; i++)
-		if(terminal->tabs[i].pid == pid)
+		if(terminal->tabs[i]->pid == pid)
 			break;
 	if(i >= terminal->tabs_cnt)
 		return;
@@ -579,7 +587,7 @@ static void _terminal_on_tab_close(GtkWidget * widget, gpointer data)
 
 	widget = gtk_widget_get_parent(widget);
 	for(i = 0; i < terminal->tabs_cnt; i++)
-		if(terminal->tabs[i].label == widget)
+		if(terminal->tabs[i]->widget == widget)
 			break;
 	if(i >= terminal->tabs_cnt)
 		/* should not happen */
