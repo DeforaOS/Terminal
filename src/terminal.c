@@ -124,7 +124,7 @@ static gboolean _terminal_on_closex(gpointer data);
 static void _terminal_on_fullscreen(gpointer data);
 static void _terminal_on_new_tab(gpointer data);
 static void _terminal_on_new_window(gpointer data);
-static void _terminal_on_tab_close(GtkWidget * widget, gpointer data);
+static void _terminal_on_tab_close(gpointer data);
 static void _terminal_on_tab_rename(gpointer data);
 
 #ifndef EMBEDDED
@@ -371,8 +371,8 @@ static int _terminal_open_tab(Terminal * terminal)
 	gtk_button_set_relief(GTK_BUTTON(widget), GTK_RELIEF_NONE);
 	gtk_box_pack_start(GTK_BOX(tab->widget), widget, FALSE, TRUE, 0);
 	widget = gtk_button_new();
-	g_signal_connect(widget, "clicked", G_CALLBACK(_terminal_on_tab_close),
-			terminal);
+	g_signal_connect_swapped(widget, "clicked", G_CALLBACK(
+				_terminal_on_tab_close), terminal);
 	gtk_container_add(GTK_CONTAINER(widget), gtk_image_new_from_stock(
 				GTK_STOCK_CLOSE, GTK_ICON_SIZE_MENU));
 	gtk_button_set_relief(GTK_BUTTON(widget), GTK_RELIEF_NONE);
@@ -588,9 +588,10 @@ static void _terminal_on_new_window(gpointer data)
 
 
 /* terminal_on_tab_close */
-static void _terminal_on_tab_close(GtkWidget * widget, gpointer data)
+static void _terminal_on_tab_close(gpointer data)
 {
 	Terminal * terminal = data;
+	GtkWidget * widget;
 	size_t i;
 
 	widget = gtk_widget_get_parent(widget);
