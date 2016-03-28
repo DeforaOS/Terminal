@@ -460,6 +460,7 @@ static void _terminal_close_all(Terminal * terminal)
 			fprintf(stderr, "%s: %s: %s\n", PROGNAME, "kill",
 					strerror(errno));
 	free(pid);
+	gtk_main_quit();
 }
 
 
