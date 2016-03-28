@@ -38,6 +38,7 @@ static char const _license[] =
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <signal.h>
 #include <libintl.h>
 #include <gtk/gtk.h>
 #include <gdk/gdkkeysyms.h>
@@ -357,8 +358,27 @@ static int _terminal_open_window(Terminal * terminal)
 /* terminal_close_all */
 static void _terminal_close_all(Terminal * terminal)
 {
+	GPid * pid;
+	size_t i;
+	size_t cnt;
+
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s()\n", __func__);
+#endif
 	gtk_widget_hide(terminal->window);
-	gtk_main_quit();
+	/* work on a copy */
+	if((pid = malloc(sizeof(*pid) * terminal->tabs_cnt)) == NULL)
+	{
+		gtk_main_quit();
+		return;
+	}
+	cnt = terminal->tabs_cnt;
+	for(i = 0; i < cnt; i++)
+		pid[i] = terminal->tabs[i].pid;
+	/* kill the remaining tabs */
+	for(i = 0; i < cnt; i++)
+		kill(pid[i], SIGTERM);
+	free(pid);
 }
 
 
