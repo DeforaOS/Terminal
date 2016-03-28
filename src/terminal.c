@@ -177,7 +177,7 @@ static DesktopToolbar _terminal_toolbar[] =
 /* public */
 /* functions */
 /* terminal_new */
-Terminal * terminal_new(char const * shell, char const * directory)
+Terminal * terminal_new(TerminalPrefs * prefs)
 {
 	Terminal * terminal;
 	GtkAccelGroup * group;
@@ -186,15 +186,17 @@ Terminal * terminal_new(char const * shell, char const * directory)
 
 	if((terminal = object_new(sizeof(*terminal))) == NULL)
 		return NULL;
-	terminal->shell = (shell != NULL) ? string_new(shell) : NULL;
-	terminal->directory = (directory != NULL)
-		? string_new(directory) : NULL;
+	terminal->shell = (prefs != NULL && prefs->shell != NULL)
+		? string_new(prefs->shell) : NULL;
+	terminal->directory = (prefs != NULL && prefs->directory != NULL)
+		? string_new(prefs->directory) : NULL;
 	terminal->tabs = NULL;
 	terminal->tabs_cnt = 0;
 	terminal->window = NULL;
 	/* check for errors */
-	if((shell != NULL && terminal->shell == NULL)
-			|| (directory != NULL && terminal->directory == NULL))
+	if((prefs != NULL && prefs->shell != NULL && terminal->shell == NULL)
+			|| (prefs != NULL && prefs->directory != NULL
+				&& terminal->directory == NULL))
 	{
 		terminal_delete(terminal);
 		return NULL;

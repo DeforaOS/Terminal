@@ -37,12 +37,18 @@
 /* Terminal */
 /* public */
 /* types */
+typedef struct _TerminalPrefs
+{
+	char const * shell;
+	char const * directory;
+} TerminalPrefs;
+
 typedef struct _Terminal Terminal;
 
 
 /* functions */
 /* essential */
-Terminal * terminal_new(char const * shell, char const * directory);
+Terminal * terminal_new(TerminalPrefs * prefs);
 void terminal_delete(Terminal * terminal);
 
 #endif /* !TERMINAL_TERMINAL_H */

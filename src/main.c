@@ -32,6 +32,7 @@
 
 #include <unistd.h>
 #include <stdio.h>
+#include <string.h>
 #include <locale.h>
 #include <libintl.h>
 #include <gtk/gtk.h>
@@ -57,7 +58,7 @@
 
 /* private */
 /* prototypes */
-static int _terminal(char const * shell, char const * directory);
+static int _terminal(TerminalPrefs * prefs);
 
 static int _error(char const * message, int ret);
 static int _usage(void);
@@ -65,11 +66,11 @@ static int _usage(void);
 
 /* functions */
 /* terminal */
-static int _terminal(char const * shell, char const * directory)
+static int _terminal(TerminalPrefs * prefs)
 {
 	Terminal * terminal;
 
-	if((terminal = terminal_new(shell, directory)) == NULL)
+	if((terminal = terminal_new(prefs)) == NULL)
 		return error_print(PACKAGE);
 	gtk_main();
 	terminal_delete(terminal);
@@ -100,26 +101,26 @@ static int _usage(void)
 int main(int argc, char * argv[])
 {
 	int o;
-	char const * shell = NULL;
-	char const * directory = NULL;
+	TerminalPrefs prefs;
 
 	if(setlocale(LC_ALL, "") == NULL)
 		_error("setlocale", 1);
 	bindtextdomain(PACKAGE, LOCALEDIR);
 	textdomain(PACKAGE);
+	memset(&prefs, 0, sizeof(prefs));
 	gtk_init(&argc, &argv);
 	while((o = getopt(argc, argv, "d:")) != -1)
 		switch(o)
 		{
 			case 'd':
-				directory = optarg;
+				prefs.directory = optarg;
 				break;
 			default:
 				return _usage();
 		}
 	if(argc - optind == 1)
-		shell = argv[optind];
+		prefs.shell = argv[optind];
 	else if(optind != argc)
 		return _usage();
-	return (_terminal(shell, directory) == 0) ? 0 : 2;
+	return (_terminal(&prefs) == 0) ? 0 : 2;
 }
