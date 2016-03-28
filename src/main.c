@@ -57,7 +57,7 @@
 
 /* private */
 /* prototypes */
-static int _terminal(char const * shell);
+static int _terminal(char const * shell, char const * directory);
 
 static int _error(char const * message, int ret);
 static int _usage(void);
@@ -65,11 +65,11 @@ static int _usage(void);
 
 /* functions */
 /* terminal */
-static int _terminal(char const * shell)
+static int _terminal(char const * shell, char const * directory)
 {
 	Terminal * terminal;
 
-	if((terminal = terminal_new(shell)) == NULL)
+	if((terminal = terminal_new(shell, directory)) == NULL)
 		return error_print(PACKAGE);
 	gtk_main();
 	terminal_delete(terminal);
@@ -89,7 +89,7 @@ static int _error(char const * message, int ret)
 /* usage */
 static int _usage(void)
 {
-	fprintf(stderr, _("Usage: %s [shell]\n"), PROGNAME);
+	fprintf(stderr, _("Usage: %s [-d directory][shell]\n"), PROGNAME);
 	return 1;
 }
 
@@ -101,15 +101,19 @@ int main(int argc, char * argv[])
 {
 	int o;
 	char const * shell = NULL;
+	char const * directory = NULL;
 
 	if(setlocale(LC_ALL, "") == NULL)
 		_error("setlocale", 1);
 	bindtextdomain(PACKAGE, LOCALEDIR);
 	textdomain(PACKAGE);
 	gtk_init(&argc, &argv);
-	while((o = getopt(argc, argv, "")) != -1)
+	while((o = getopt(argc, argv, "d:")) != -1)
 		switch(o)
 		{
+			case 'd':
+				directory = optarg;
+				break;
 			default:
 				return _usage();
 		}
@@ -117,5 +121,5 @@ int main(int argc, char * argv[])
 		shell = argv[optind];
 	else if(optind != argc)
 		return _usage();
-	return (_terminal(shell) == 0) ? 0 : 2;
+	return (_terminal(shell, directory) == 0) ? 0 : 2;
 }

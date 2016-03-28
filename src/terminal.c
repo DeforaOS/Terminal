@@ -71,6 +71,7 @@ typedef struct _TerminalTab TerminalTab;
 struct _Terminal
 {
 	char * shell;
+	char * directory;
 
 	/* internal */
 	TerminalTab * tabs;
@@ -176,7 +177,7 @@ static DesktopToolbar _terminal_toolbar[] =
 /* public */
 /* functions */
 /* terminal_new */
-Terminal * terminal_new(char const * shell)
+Terminal * terminal_new(char const * shell, char const * directory)
 {
 	Terminal * terminal;
 	GtkAccelGroup * group;
@@ -186,11 +187,13 @@ Terminal * terminal_new(char const * shell)
 	if((terminal = object_new(sizeof(*terminal))) == NULL)
 		return NULL;
 	terminal->shell = (shell != NULL) ? strdup(shell) : NULL;
+	terminal->directory = (directory != NULL) ? strdup(directory) : NULL;
 	terminal->tabs = NULL;
 	terminal->tabs_cnt = 0;
 	terminal->window = NULL;
 	/* check for errors */
-	if(shell != NULL && terminal->shell == NULL)
+	if((shell != NULL && terminal->shell == NULL)
+			|| (directory != NULL && terminal->directory == NULL))
 	{
 		terminal_delete(terminal);
 		return NULL;
@@ -248,6 +251,7 @@ void terminal_delete(Terminal * terminal)
 	if(terminal->window != NULL)
 		gtk_widget_destroy(terminal->window);
 	free(terminal->tabs);
+	free(terminal->directory);
 	free(terminal->shell);
 	object_delete(terminal);
 }
@@ -301,8 +305,8 @@ static int _terminal_open_tab(Terminal * terminal)
 				GTK_SOCKET(p->socket)));
 	argv[3] = buf;
 	argv[6] = terminal->shell;
-	if(g_spawn_async(NULL, argv, NULL, flags, NULL, NULL, &p->pid, &error)
-			== FALSE)
+	if(g_spawn_async(terminal->directory, argv, NULL, flags, NULL, NULL,
+				&p->pid, &error) == FALSE)
 	{
 		fprintf(stderr, "%s: %s: %s\n", PROGNAME, argv[1],
 				error->message);
