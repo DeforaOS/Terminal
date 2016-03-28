@@ -246,8 +246,12 @@ void terminal_delete(Terminal * terminal)
 	size_t i;
 
 	for(i = 0; i < terminal->tabs_cnt; i++)
+	{
+		if(terminal->tabs[i].source > 0)
+			g_source_remove(terminal->tabs[i].source);
 		if(terminal->tabs[i].pid > 0)
 			g_spawn_close_pid(terminal->tabs[i].pid);
+	}
 	/* FIXME also take care of the sub-processes */
 	if(terminal->window != NULL)
 		gtk_widget_destroy(terminal->window);
