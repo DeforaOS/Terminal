@@ -81,6 +81,10 @@ struct _Terminal
 
 	/* widgets */
 	GtkWidget * window;
+	gboolean fullscreen;
+#ifndef EMBEDDED
+	GtkWidget * menubar;
+#endif
 	GtkWidget * notebook;
 };
 
@@ -114,6 +118,7 @@ static void _terminal_close_all(Terminal * terminal);
 static void _terminal_on_child_watch(GPid pid, gint status, gpointer data);
 static void _terminal_on_close(gpointer data);
 static gboolean _terminal_on_closex(gpointer data);
+static void _terminal_on_fullscreen(gpointer data);
 static void _terminal_on_new_tab(gpointer data);
 static void _terminal_on_new_window(gpointer data);
 static void _terminal_on_tab_close(GtkWidget * widget, gpointer data);
@@ -123,6 +128,7 @@ static void _terminal_on_file_close(gpointer data);
 static void _terminal_on_file_close_all(gpointer data);
 static void _terminal_on_file_new_tab(gpointer data);
 static void _terminal_on_file_new_window(gpointer data);
+static void _terminal_on_view_fullscreen(gpointer data);
 static void _terminal_on_help_about(gpointer data);
 static void _terminal_on_help_contents(gpointer data);
 #endif
@@ -145,6 +151,18 @@ static const DesktopMenu _terminal_file_menu[] =
 	{ NULL, NULL, NULL, 0, 0 }
 };
 
+static const DesktopMenu _terminal_view_menu[] =
+{
+	{ N_("_Fullscreen"), G_CALLBACK(_terminal_on_view_fullscreen),
+# if GTK_CHECK_VERSION(2, 8, 0)
+		GTK_STOCK_FULLSCREEN,
+# else
+		NULL,
+# endif
+		0, GDK_KEY_F11 },
+	{ NULL, NULL, NULL, 0, 0 }
+};
+
 static const DesktopMenu _terminal_help_menu[] =
 {
 	{ N_("_Contents"), G_CALLBACK(_terminal_on_help_contents),
@@ -161,6 +179,7 @@ static const DesktopMenu _terminal_help_menu[] =
 static const DesktopMenubar _terminal_menubar[] =
 {
 	{ N_("_File"), _terminal_file_menu },
+	{ N_("_View"), _terminal_view_menu },
 	{ N_("_Help"), _terminal_help_menu },
 	{ NULL, NULL }
 };
@@ -172,6 +191,14 @@ static DesktopToolbar _terminal_toolbar[] =
 		NULL },
 	{ N_("New window"), G_CALLBACK(_terminal_on_new_window), "window-new",
 		0, 0, NULL },
+	{ "", NULL, NULL, 0, 0, NULL },
+	{ N_("Fullscreen"), G_CALLBACK(_terminal_on_fullscreen),
+# if GTK_CHECK_VERSION(2, 8, 0)
+		GTK_STOCK_FULLSCREEN,
+# else
+		"gtk-fullscreen",
+# endif
+		0, GDK_KEY_F11, NULL },
 	{ NULL, NULL, NULL, 0, 0, NULL }
 };
 
@@ -196,6 +223,7 @@ Terminal * terminal_new(TerminalPrefs * prefs)
 	terminal->tabs = NULL;
 	terminal->tabs_cnt = 0;
 	terminal->window = NULL;
+	terminal->fullscreen = FALSE;
 	/* check for errors */
 	if((prefs != NULL && prefs->shell != NULL && terminal->shell == NULL)
 			|| (prefs != NULL && prefs->directory != NULL
@@ -223,8 +251,9 @@ Terminal * terminal_new(TerminalPrefs * prefs)
 #endif
 #ifndef EMBEDDED
 	/* menubar */
-	widget = desktop_menubar_create(_terminal_menubar, terminal, group);
-	gtk_box_pack_start(GTK_BOX(vbox), widget, FALSE, TRUE, 0);
+	terminal->menubar = desktop_menubar_create(_terminal_menubar, terminal,
+			group);
+	gtk_box_pack_start(GTK_BOX(vbox), terminal->menubar, FALSE, TRUE, 0);
 #endif
 	/* toolbar */
 	widget = desktop_toolbar_create(_terminal_toolbar, terminal, group);
@@ -264,6 +293,28 @@ void terminal_delete(Terminal * terminal)
 	string_delete(terminal->directory);
 	string_delete(terminal->shell);
 	object_delete(terminal);
+}
+
+
+/* accessors */
+/* terminal_set_fullscreen */
+void terminal_set_fullscreen(Terminal * terminal, gboolean fullscreen)
+{
+	if(fullscreen)
+	{
+#ifndef EMBEDDED
+		gtk_widget_hide(terminal->menubar);
+#endif
+		gtk_window_fullscreen(GTK_WINDOW(terminal->window));
+	}
+	else
+	{
+		gtk_window_unfullscreen(GTK_WINDOW(terminal->window));
+#ifndef EMBEDDED
+		gtk_widget_show(terminal->menubar);
+#endif
+	}
+	terminal->fullscreen = fullscreen;
 }
 
 
@@ -485,6 +536,15 @@ static gboolean _on_closex_confirm(Terminal * terminal)
 }
 
 
+/* terminal_on_fullscreen */
+static void _terminal_on_fullscreen(gpointer data)
+{
+	Terminal * terminal = data;
+
+	terminal_set_fullscreen(terminal, terminal->fullscreen ? FALSE : TRUE);
+}
+
+
 /* terminal_on_new_tab */
 static void _terminal_on_new_tab(gpointer data)
 {
@@ -584,5 +644,14 @@ static void _terminal_on_help_about(gpointer data)
 static void _terminal_on_help_contents(gpointer data)
 {
 	desktop_help_contents(PACKAGE, PROGNAME);
+}
+
+
+/* terminal_on_view_fullscreen */
+static void _terminal_on_view_fullscreen(gpointer data)
+{
+	Terminal * terminal = data;
+
+	_terminal_on_fullscreen(terminal);
 }
 #endif

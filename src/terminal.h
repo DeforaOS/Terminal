@@ -52,4 +52,8 @@ typedef struct _Terminal Terminal;
 Terminal * terminal_new(TerminalPrefs * prefs);
 void terminal_delete(Terminal * terminal);
 
+
+/* accessors */
+void terminal_set_fullscreen(Terminal * terminal, gboolean fullscreen);
+
 #endif /* !TERMINAL_TERMINAL_H */
