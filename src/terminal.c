@@ -449,7 +449,11 @@ static void _terminal_close_all(Terminal * terminal)
 	}
 	cnt = terminal->tabs_cnt;
 	for(i = 0; i < cnt; i++)
+	{
 		pid[i] = terminal->tabs[i]->pid;
+		g_spawn_close_pid(terminal->tabs[i]->pid);
+		terminal->tabs[i]->pid = -1;
+	}
 	/* kill the remaining tabs */
 	for(i = 0; i < cnt; i++)
 		if(kill(pid[i], SIGTERM) != 0)
@@ -468,7 +472,12 @@ static void _terminal_close_tab(Terminal * terminal, unsigned int i)
 	if(terminal->tabs[i]->source > 0)
 		g_source_remove(terminal->tabs[i]->source);
 	if(terminal->tabs[i]->pid >= 0)
+	{
 		g_spawn_close_pid(terminal->tabs[i]->pid);
+		if(kill(terminal->tabs[i]->pid, SIGTERM) != 0)
+			fprintf(stderr, "%s: %s: %s\n", PROGNAME, "kill",
+					strerror(errno));
+	}
 	free(terminal->tabs[i]);
 	gtk_notebook_remove_page(GTK_NOTEBOOK(terminal->notebook), i);
 	memmove(&terminal->tabs[i], &terminal->tabs[i + 1],
@@ -500,6 +509,8 @@ static void _terminal_on_child_watch(GPid pid, gint status, gpointer data)
 			fprintf(stderr, "%s: %s%u\n", PROGNAME,
 					_("xterm exited with status "),
 					WEXITSTATUS(status));
+		g_spawn_close_pid(terminal->tabs[i]->pid);
+		terminal->tabs[i]->pid = -1;
 		_terminal_close_tab(terminal, i);
 	}
 	else if(WIFSIGNALED(status))
@@ -507,6 +518,8 @@ static void _terminal_on_child_watch(GPid pid, gint status, gpointer data)
 		fprintf(stderr, "%s: %s%u\n", PROGNAME,
 				_("xterm exited with signal "),
 				WTERMSIG(status));
+		g_spawn_close_pid(terminal->tabs[i]->pid);
+		terminal->tabs[i]->pid = -1;
 		_terminal_close_tab(terminal, i);
 	}
 }
