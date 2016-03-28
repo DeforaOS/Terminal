@@ -631,7 +631,7 @@ static void _terminal_on_tab_rename(gpointer data)
 
 	dialog = gtk_message_dialog_new(GTK_WINDOW(tab->terminal->window),
 			GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT,
-			GTK_MESSAGE_OTHER, GTK_BUTTONS_OK_CANCEL,
+			GTK_MESSAGE_OTHER, GTK_BUTTONS_NONE,
 #if GTK_CHECK_VERSION(2, 6, 0)
 			"%s", _("Rename tab"));
 # if GTK_CHECK_VERSION(2, 10, 0)
@@ -642,6 +642,9 @@ static void _terminal_on_tab_rename(gpointer data)
 	gtk_message_dialog_format_secondary_text(GTK_MESSAGE_DIALOG(dialog),
 #endif
 			"%s", _("Rename this tab as:"));
+	gtk_dialog_add_buttons(GTK_DIALOG(dialog),
+			GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
+			GTK_STOCK_OK, GTK_RESPONSE_OK, NULL);
 	gtk_dialog_set_default_response(GTK_DIALOG(dialog), GTK_RESPONSE_OK);
 	gtk_window_set_title(GTK_WINDOW(dialog), _("Rename tab"));
 #if GTK_CHECK_VERSION(2, 14, 0)
