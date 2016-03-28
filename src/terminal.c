@@ -186,8 +186,9 @@ Terminal * terminal_new(char const * shell, char const * directory)
 
 	if((terminal = object_new(sizeof(*terminal))) == NULL)
 		return NULL;
-	terminal->shell = (shell != NULL) ? strdup(shell) : NULL;
-	terminal->directory = (directory != NULL) ? strdup(directory) : NULL;
+	terminal->shell = (shell != NULL) ? string_new(shell) : NULL;
+	terminal->directory = (directory != NULL)
+		? string_new(directory) : NULL;
 	terminal->tabs = NULL;
 	terminal->tabs_cnt = 0;
 	terminal->window = NULL;
@@ -251,8 +252,8 @@ void terminal_delete(Terminal * terminal)
 	if(terminal->window != NULL)
 		gtk_widget_destroy(terminal->window);
 	free(terminal->tabs);
-	free(terminal->directory);
-	free(terminal->shell);
+	string_delete(terminal->directory);
+	string_delete(terminal->shell);
 	object_delete(terminal);
 }
 

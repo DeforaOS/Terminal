@@ -5,6 +5,7 @@ Terminal*allowSendEvents: true
 !Terminal*faceName: 'Bitstream Vera Sans Mono'
 !Terminal*faceSize: 8
 !Terminal*foreground: #000000
+Terminal*hold: true
 !Terminal*saveLines: 1000
 Terminal*toolBar: false
 !Terminal*VT100*background: #000000
