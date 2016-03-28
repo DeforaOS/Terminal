@@ -125,6 +125,7 @@ static void _terminal_on_fullscreen(gpointer data);
 static void _terminal_on_new_tab(gpointer data);
 static void _terminal_on_new_window(gpointer data);
 static void _terminal_on_tab_close(GtkWidget * widget, gpointer data);
+static void _terminal_on_tab_rename(gpointer data);
 
 #ifndef EMBEDDED
 static void _terminal_on_file_close(gpointer data);
@@ -363,6 +364,13 @@ static int _terminal_open_tab(Terminal * terminal)
 	tab->label = gtk_label_new(_("xterm"));
 	gtk_box_pack_start(GTK_BOX(tab->widget), tab->label, TRUE, TRUE, 0);
 	widget = gtk_button_new();
+	g_signal_connect_swapped(widget, "clicked", G_CALLBACK(
+				_terminal_on_tab_rename), tab);
+	gtk_container_add(GTK_CONTAINER(widget), gtk_image_new_from_stock(
+				GTK_STOCK_EDIT, GTK_ICON_SIZE_MENU));
+	gtk_button_set_relief(GTK_BUTTON(widget), GTK_RELIEF_NONE);
+	gtk_box_pack_start(GTK_BOX(tab->widget), widget, FALSE, TRUE, 0);
+	widget = gtk_button_new();
 	g_signal_connect(widget, "clicked", G_CALLBACK(_terminal_on_tab_close),
 			terminal);
 	gtk_container_add(GTK_CONTAINER(widget), gtk_image_new_from_stock(
@@ -593,6 +601,50 @@ static void _terminal_on_tab_close(GtkWidget * widget, gpointer data)
 		/* should not happen */
 		return;
 	_terminal_close_tab(terminal, i);
+}
+
+
+/* terminal_on_tab_rename */
+static void _terminal_on_tab_rename(gpointer data)
+{
+	TerminalTab * tab = data;
+	GtkWidget * dialog;
+	GtkWidget * content;
+	GtkWidget * entry;
+	gchar const * p;
+
+	dialog = gtk_message_dialog_new(GTK_WINDOW(tab->terminal->window),
+			GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT,
+			GTK_MESSAGE_OTHER, GTK_BUTTONS_OK_CANCEL,
+#if GTK_CHECK_VERSION(2, 6, 0)
+			"%s", _("Rename tab"));
+# if GTK_CHECK_VERSION(2, 10, 0)
+	gtk_message_dialog_set_image(GTK_MESSAGE_DIALOG(dialog),
+			gtk_image_new_from_stock(GTK_STOCK_EDIT,
+				GTK_ICON_SIZE_DIALOG));
+# endif
+	gtk_message_dialog_format_secondary_text(GTK_MESSAGE_DIALOG(dialog),
+#endif
+			"%s", _("Rename this tab as:"));
+	gtk_dialog_set_default_response(GTK_DIALOG(dialog), GTK_RESPONSE_OK);
+	gtk_window_set_title(GTK_WINDOW(dialog), _("Rename tab"));
+#if GTK_CHECK_VERSION(2, 14, 0)
+	content = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
+#else
+	content = GTK_DIALOG(dialog)->vbox;
+#endif
+	entry = gtk_entry_new();
+	gtk_entry_set_activates_default(GTK_ENTRY(entry), TRUE);
+	gtk_entry_set_text(GTK_ENTRY(entry), gtk_label_get_text(
+				GTK_LABEL(tab->label)));
+	gtk_box_pack_start(GTK_BOX(content), entry, FALSE, TRUE, 0);
+	gtk_widget_show_all(content);
+	if(gtk_dialog_run(GTK_DIALOG(dialog)) == GTK_RESPONSE_OK)
+	{
+		p = gtk_entry_get_text(GTK_ENTRY(entry));
+		gtk_label_set_text(GTK_LABEL(tab->label), p);
+	}
+	gtk_widget_destroy(dialog);
 }
 
 
