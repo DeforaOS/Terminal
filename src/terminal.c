@@ -85,6 +85,7 @@ struct _Terminal
 #ifndef EMBEDDED
 	GtkWidget * menubar;
 #endif
+	GtkToolItem * tb_fullscreen;
 	GtkWidget * notebook;
 };
 
@@ -192,13 +193,6 @@ static DesktopToolbar _terminal_toolbar[] =
 	{ N_("New window"), G_CALLBACK(_terminal_on_new_window), "window-new",
 		0, 0, NULL },
 	{ "", NULL, NULL, 0, 0, NULL },
-	{ N_("Fullscreen"), G_CALLBACK(_terminal_on_fullscreen),
-# if GTK_CHECK_VERSION(2, 8, 0)
-		GTK_STOCK_FULLSCREEN,
-# else
-		"gtk-fullscreen",
-# endif
-		0, GDK_KEY_F11, NULL },
 	{ NULL, NULL, NULL, 0, 0, NULL }
 };
 
@@ -212,6 +206,7 @@ Terminal * terminal_new(TerminalPrefs * prefs)
 	GtkAccelGroup * group;
 	GtkWidget * vbox;
 	GtkWidget * widget;
+	GtkToolItem * toolitem;
 
 	if((terminal = object_new(sizeof(*terminal))) == NULL)
 		return NULL;
@@ -257,6 +252,15 @@ Terminal * terminal_new(TerminalPrefs * prefs)
 #endif
 	/* toolbar */
 	widget = desktop_toolbar_create(_terminal_toolbar, terminal, group);
+#if GTK_CHECK_VERSION(2, 8, 0)
+	toolitem = gtk_toggle_tool_button_new_from_stock(GTK_STOCK_FULLSCREEN);
+#else
+	toolitem = gtk_toggle_tool_button_new_from_stock(GTK_STOCK_ZOOM_FIT);
+#endif
+	terminal->tb_fullscreen = toolitem;
+	g_signal_connect_swapped(G_OBJECT(toolitem), "toggled", G_CALLBACK(
+				_terminal_on_fullscreen), terminal);
+	gtk_toolbar_insert(GTK_TOOLBAR(widget), toolitem, -1);
 	gtk_box_pack_start(GTK_BOX(vbox), widget, FALSE, TRUE, 0);
 	/* view */
 	terminal->notebook = gtk_notebook_new();
@@ -305,10 +309,14 @@ void terminal_set_fullscreen(Terminal * terminal, gboolean fullscreen)
 #ifndef EMBEDDED
 		gtk_widget_hide(terminal->menubar);
 #endif
+		gtk_toggle_tool_button_set_active(GTK_TOGGLE_TOOL_BUTTON(
+					terminal->tb_fullscreen), TRUE);
 		gtk_window_fullscreen(GTK_WINDOW(terminal->window));
 	}
 	else
 	{
+		gtk_toggle_tool_button_set_active(GTK_TOGGLE_TOOL_BUTTON(
+					terminal->tb_fullscreen), FALSE);
 		gtk_window_unfullscreen(GTK_WINDOW(terminal->window));
 #ifndef EMBEDDED
 		gtk_widget_show(terminal->menubar);
