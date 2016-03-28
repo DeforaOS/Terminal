@@ -72,6 +72,7 @@ struct _Terminal
 {
 	char * shell;
 	char * directory;
+	unsigned int login;
 
 	/* internal */
 	TerminalTab * tabs;
@@ -190,6 +191,7 @@ Terminal * terminal_new(TerminalPrefs * prefs)
 		? string_new(prefs->shell) : NULL;
 	terminal->directory = (prefs != NULL && prefs->directory != NULL)
 		? string_new(prefs->directory) : NULL;
+	terminal->login = (prefs != NULL) ? prefs->login : 0;
 	terminal->tabs = NULL;
 	terminal->tabs_cnt = 0;
 	terminal->window = NULL;
@@ -273,7 +275,7 @@ static int _terminal_open_tab(Terminal * terminal)
 	TerminalTab * p;
 	GtkWidget * widget;
 	char * argv[] = { BINDIR "/xterm", "xterm", "-into", NULL,
-		"-class", "Terminal", NULL, NULL };
+		"-class", "Terminal", NULL, NULL, NULL };
 	char buf[32];
 	GSpawnFlags flags = G_SPAWN_FILE_AND_ARGV_ZERO
 		| G_SPAWN_DO_NOT_REAP_CHILD;
@@ -311,7 +313,13 @@ static int _terminal_open_tab(Terminal * terminal)
 	snprintf(buf, sizeof(buf), "%lu", gtk_socket_get_id(
 				GTK_SOCKET(p->socket)));
 	argv[3] = buf;
-	argv[6] = terminal->shell;
+	if(terminal->login)
+	{
+		argv[6] = "-ls";
+		argv[7] = terminal->shell;
+	}
+	else
+		argv[6] = terminal->shell;
 	if(g_spawn_async(terminal->directory, argv, NULL, flags, NULL, NULL,
 				&p->pid, &error) == FALSE)
 	{

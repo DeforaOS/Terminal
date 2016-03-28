@@ -70,6 +70,14 @@ static int _terminal(TerminalPrefs * prefs)
 {
 	Terminal * terminal;
 
+	/* consistency check */
+	if(prefs != NULL)
+	{
+		if(prefs->shell != NULL)
+			prefs->login = 0;
+		else if(prefs->login != 0)
+			prefs->directory = NULL;
+	}
 	if((terminal = terminal_new(prefs)) == NULL)
 		return error_print(PACKAGE);
 	gtk_main();
@@ -109,11 +117,14 @@ int main(int argc, char * argv[])
 	textdomain(PACKAGE);
 	memset(&prefs, 0, sizeof(prefs));
 	gtk_init(&argc, &argv);
-	while((o = getopt(argc, argv, "d:")) != -1)
+	while((o = getopt(argc, argv, "d:l")) != -1)
 		switch(o)
 		{
 			case 'd':
 				prefs.directory = optarg;
+				break;
+			case 'l':
+				prefs.login = 1;
 				break;
 			default:
 				return _usage();

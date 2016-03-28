@@ -41,6 +41,7 @@ typedef struct _TerminalPrefs
 {
 	char const * shell;
 	char const * directory;
+	unsigned int login;
 } TerminalPrefs;
 
 typedef struct _Terminal Terminal;
