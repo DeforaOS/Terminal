@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2012-2016 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2018 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Desktop Terminal */
 /* Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -30,39 +30,30 @@
 
 
 
-#ifndef TERMINAL_TERMINAL_H
-# define TERMINAL_TERMINAL_H
+#ifndef TERMINAL_WINDOW_H
+# define TERMINAL_WINDOW_H
 
 # include "common.h"
 
 
-/* Terminal */
+/* TerminalWindow */
 /* public */
-/* types */
-typedef struct _TerminalPrefs
-{
-	String const * shell;
-	String const * directory;
-	unsigned int login;
-} TerminalPrefs;
-
-
 /* functions */
-/* essential */
-Terminal * terminal_new(TerminalPrefs * prefs);
-void terminal_delete(Terminal * terminal);
+TerminalWindow * terminalwindow_new(Terminal * terminal);
+void terminalwindow_delete(TerminalWindow * window);
+
 
 /* accessors */
-String const * terminal_get_directory(Terminal * terminal);
-String const * terminal_get_shell(Terminal * terminal);
-TerminalWindow * terminal_get_window(Terminal * terminal);
-gboolean terminal_is_login(Terminal * terminal);
+gboolean terminalwindow_get_fullscreen(TerminalWindow * window);
+void terminalwindow_set_fullscreen(TerminalWindow * window,
+		gboolean fullscreen);
+
+TerminalWidget * terminalwindow_get_widget(TerminalWindow * window);
+GtkWidget * terminalwindow_get_window(TerminalWindow * window);
 
 /* useful */
-void terminal_tab_close(Terminal * terminal, TerminalTab * tab);
-void terminal_tab_close_all(Terminal * terminal);
-TerminalTab * terminal_tab_open(Terminal * terminal);
+/* interface */
+void terminalwindow_show_about(TerminalWindow * terminal, gboolean show);
+void terminalwindow_show_preferences(TerminalWindow * terminal, gboolean show);
 
-int terminal_window_open(Terminal * terminal);
-
-#endif /* !TERMINAL_TERMINAL_H */
+#endif /* !TERMINAL_WINDOW_H */
