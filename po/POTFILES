@@ -1,2 +1,5 @@
 ../src/main.c
+../src/tab.c
 ../src/terminal.c
+../src/widget.c
+../src/window.c
