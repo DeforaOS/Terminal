@@ -33,11 +33,11 @@
 #include <stdio.h>
 #include <libintl.h>
 #include <gtk/gtk.h>
+#include <sys/wait.h>
+#include <string.h>
+#include <signal.h>
+#include <errno.h>
 #ifdef WITH_XTERM
-# include <sys/wait.h>
-# include <string.h>
-# include <signal.h>
-# include <errno.h>
 # if GTK_CHECK_VERSION(3, 0, 0)
 #  include <gtk/gtkx.h>
 # endif
@@ -55,8 +55,10 @@
 #ifndef PROGNAME_TERMINAL
 # define PROGNAME_TERMINAL	"terminal"
 #endif
-#ifndef PROGNAME_XTERM
-# define PROGNAME_XTERM		"xterm"
+#ifdef WITH_XTERM
+# ifndef PROGNAME_XTERM
+#  define PROGNAME_XTERM		"xterm"
+# endif
 #endif
 #ifndef PREFIX
 # define PREFIX			"/usr/local"
@@ -74,27 +76,19 @@ struct _TerminalTab
 	Terminal * terminal;
 	GtkWidget * widget;
 	GtkWidget * label;
-#ifdef WITH_XTERM
 	GtkWidget * socket;
 	GPid pid;
 	guint source;
-#else
-	GtkWidget * socket;
-#endif
 };
 
 
 /* prototypes */
 /* callbacks */
-#ifdef WITH_XTERM
 static void _terminaltab_on_child_watch(GPid pid, gint status, gpointer data);
-#endif
 static void _terminaltab_on_close(gpointer data);
 static void _terminaltab_on_rename(gpointer data);
-#ifdef WITH_XTERM
 static void _terminaltab_on_screen_changed(GtkWidget * widget,
 		GdkScreen * screen, gpointer data);
-#endif
 
 
 /* public */
@@ -108,15 +102,15 @@ TerminalTab * terminaltab_new(Terminal * terminal)
 	if((tab = object_new(sizeof(*tab))) == NULL)
 		return NULL;
 	tab->terminal = terminal;
-#ifdef WITH_XTERM
-	tab->socket = gtk_socket_new();
 	tab->pid = -1;
 	tab->source = 0;
-	g_signal_connect(tab->socket, "screen-changed", G_CALLBACK(
-				_terminaltab_on_screen_changed), tab);
+#ifdef WITH_XTERM
+	tab->socket = gtk_socket_new();
 #else
 	tab->socket = vte_terminal_new();
 #endif
+	g_signal_connect(tab->socket, "screen-changed", G_CALLBACK(
+				_terminaltab_on_screen_changed), tab);
 	tab->widget = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
 	tab->label = gtk_label_new(_("xterm"));
 	gtk_box_pack_start(GTK_BOX(tab->widget), tab->label, TRUE, TRUE, 0);
@@ -143,7 +137,6 @@ TerminalTab * terminaltab_new(Terminal * terminal)
 /* terminaltab_delete */
 void terminaltab_delete(TerminalTab * tab)
 {
-#ifdef WITH_XTERM
 	if(tab->source > 0)
 		g_source_remove(tab->source);
 	if(tab->pid > 0)
@@ -153,7 +146,6 @@ void terminaltab_delete(TerminalTab * tab)
 			fprintf(stderr, "%s: %s: %s\n", PROGNAME_TERMINAL,
 					"kill", strerror(errno));
 	}
-#endif
 	object_delete(tab);
 }
 
@@ -176,7 +168,6 @@ GtkWidget * terminaltab_get_widget(TerminalTab * tab)
 /* private */
 /* functions */
 /* callbacks */
-#ifdef WITH_XTERM
 /* terminaltab_on_child_watch */
 static void _terminaltab_on_child_watch(GPid pid, gint status, gpointer data)
 {
@@ -191,7 +182,7 @@ static void _terminaltab_on_child_watch(GPid pid, gint status, gpointer data)
 	{
 		if(WEXITSTATUS(status) != 0)
 			fprintf(stderr, "%s: %s%u\n", PROGNAME_TERMINAL,
-					_("xterm exited with status "),
+					_("process exited with status "),
 					WEXITSTATUS(status));
 		g_spawn_close_pid(tab->pid);
 		tab->pid = -1;
@@ -200,14 +191,13 @@ static void _terminaltab_on_child_watch(GPid pid, gint status, gpointer data)
 	else if(WIFSIGNALED(status))
 	{
 		fprintf(stderr, "%s: %s%u\n", PROGNAME_TERMINAL,
-				_("xterm exited with signal "),
+				_("process exited with signal "),
 				WTERMSIG(status));
 		g_spawn_close_pid(tab->pid);
 		tab->pid = -1;
 		terminal_tab_close(tab->terminal, tab);
 	}
 }
-#endif
 
 
 /* terminaltab_on_close */
@@ -270,18 +260,19 @@ static void _terminaltab_on_rename(gpointer data)
 }
 
 
-#ifdef WITH_XTERM
 /* terminaltab_on_screen_changed */
 static void _terminaltab_on_screen_changed(GtkWidget * widget,
 		GdkScreen * screen, gpointer data)
 {
 	TerminalTab * tab = data;
+	const GSpawnFlags flags = G_SPAWN_FILE_AND_ARGV_ZERO
+		| G_SPAWN_DO_NOT_REAP_CHILD;
+	GError * error = NULL;
+	gboolean res;
+#ifdef WITH_XTERM
 	char * argv[] = { BINDIR "/" PROGNAME_XTERM, PROGNAME_XTERM,
 		"-into", NULL, "-class", "Terminal", NULL, NULL, NULL };
 	char buf[32];
-	GSpawnFlags flags = G_SPAWN_FILE_AND_ARGV_ZERO
-		| G_SPAWN_DO_NOT_REAP_CHILD;
-	GError * error = NULL;
 
 	if(screen != NULL)
 		return;
@@ -296,15 +287,26 @@ static void _terminaltab_on_screen_changed(GtkWidget * widget,
 	}
 	else
 		argv[6] = terminal_get_shell(tab->terminal);
-	if(g_spawn_async(terminal_get_directory(tab->terminal), argv, NULL,
-				flags, NULL, NULL, &tab->pid, &error) == FALSE)
+	res = g_spawn_async(terminal_get_directory(tab->terminal), argv, NULL,
+			flags, NULL, NULL, &tab->pid, &error);
+#else
+	char * argv[] = { NULL, NULL, NULL };
+
+	if((argv[0] = vte_get_user_shell()) == NULL)
+		argv[0] = "/bin/sh";
+	argv[1] = g_path_get_basename(argv[0]);
+	res = vte_terminal_spawn_sync(VTE_TERMINAL(tab->socket),
+			VTE_PTY_DEFAULT, NULL, argv, NULL, flags, NULL, NULL,
+			&tab->pid, NULL, &error);
+	g_free(argv[1]);
+#endif
+	if(res == FALSE)
 	{
-		fprintf(stderr, "%s: %s: %s\n", PROGNAME_TERMINAL, argv[1],
+		fprintf(stderr, "%s: %s: %s\n", PROGNAME_TERMINAL, argv[0],
 				error->message);
 		g_error_free(error);
+		return;
 	}
-	else
-		tab->source = g_child_watch_add(tab->pid,
-				_terminaltab_on_child_watch, tab);
+	tab->source = g_child_watch_add(tab->pid, _terminaltab_on_child_watch,
+			tab);
 }
-#endif
