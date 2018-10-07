@@ -77,15 +77,19 @@ static void _terminalwidget_tab_close(TerminalWidget * widget, unsigned int i);
 
 /* callbacks */
 static void _terminalwidget_on_close(gpointer data);
+static void _terminalwidget_on_copy(gpointer data);
 static void _terminalwidget_on_fullscreen(gpointer data);
 static void _terminalwidget_on_new_tab(gpointer data);
 static void _terminalwidget_on_new_window(gpointer data);
+static void _terminalwidget_on_paste(gpointer data);
 
 #ifndef EMBEDDED
 static void _terminalwidget_on_file_close(gpointer data);
 static void _terminalwidget_on_file_close_all(gpointer data);
 static void _terminalwidget_on_file_new_tab(gpointer data);
 static void _terminalwidget_on_file_new_window(gpointer data);
+static void _terminalwidget_on_edit_copy(gpointer data);
+static void _terminalwidget_on_edit_paste(gpointer data);
 static void _terminalwidget_on_view_fullscreen(gpointer data);
 static void _terminalwidget_on_help_about(gpointer data);
 static void _terminalwidget_on_help_contents(gpointer data);
@@ -112,6 +116,15 @@ static const DesktopMenu _terminalwidget_file_menu[] =
 		GTK_STOCK_CLOSE, GDK_CONTROL_MASK, GDK_KEY_W },
 	{ N_("Close all tabs"), G_CALLBACK(_terminalwidget_on_file_close_all),
 		NULL, GDK_SHIFT_MASK | GDK_CONTROL_MASK, GDK_KEY_W },
+	{ NULL, NULL, NULL, 0, 0 }
+};
+
+static const DesktopMenu _terminalwidget_edit_menu[] =
+{
+	{ N_("_Copy"), G_CALLBACK(_terminalwidget_on_edit_copy),
+		GTK_STOCK_COPY, GDK_SHIFT_MASK | GDK_CONTROL_MASK, GDK_KEY_C },
+	{ N_("_Paste"), G_CALLBACK(_terminalwidget_on_edit_paste),
+		GTK_STOCK_PASTE, GDK_SHIFT_MASK | GDK_CONTROL_MASK, GDK_KEY_V },
 	{ NULL, NULL, NULL, 0, 0 }
 };
 
@@ -143,6 +156,7 @@ static const DesktopMenu _terminalwidget_help_menu[] =
 static const DesktopMenubar _terminalwidget_menubar[] =
 {
 	{ N_("_File"), _terminalwidget_file_menu },
+	{ N_("_Edit"), _terminalwidget_edit_menu },
 	{ N_("_View"), _terminalwidget_view_menu },
 	{ N_("_Help"), _terminalwidget_help_menu },
 	{ NULL, NULL }
@@ -155,6 +169,11 @@ static DesktopToolbar _terminalwidget_toolbar[] =
 		0, NULL },
 	{ N_("New window"), G_CALLBACK(_terminalwidget_on_new_window),
 		"window-new", 0, 0, NULL },
+	{ "", NULL, NULL, 0, 0, NULL },
+	{ N_("Copy"), G_CALLBACK(_terminalwidget_on_copy), GTK_STOCK_COPY, 0,
+		0, NULL },
+	{ N_("Paste"), G_CALLBACK(_terminalwidget_on_paste), GTK_STOCK_PASTE, 0,
+		0, NULL },
 	{ "", NULL, NULL, 0, 0, NULL },
 	{ NULL, NULL, NULL, 0, 0, NULL }
 };
@@ -426,6 +445,19 @@ static void _terminalwidget_on_close(gpointer data)
 }
 
 
+/* terminalwidget_on_copy */
+static void _terminalwidget_on_copy(gpointer data)
+{
+	TerminalWidget * widget = data;
+	int i;
+
+	i = gtk_notebook_get_current_page(GTK_NOTEBOOK(widget->notebook));
+	if(i < 0)
+		return;
+	terminaltab_clipboard_copy(widget->tabs[i]);
+}
+
+
 /* terminalwidget_on_fullscreen */
 static void _terminalwidget_on_fullscreen(gpointer data)
 {
@@ -457,7 +489,38 @@ static void _terminalwidget_on_new_window(gpointer data)
 }
 
 
+/* terminalwidget_on_paste */
+static void _terminalwidget_on_paste(gpointer data)
+{
+	TerminalWidget * widget = data;
+	int i;
+
+	i = gtk_notebook_get_current_page(GTK_NOTEBOOK(widget->notebook));
+	if(i < 0)
+		return;
+	terminaltab_clipboard_paste(widget->tabs[i]);
+}
+
+
 #ifndef EMBEDDED
+/* terminalwidget_on_edit_copy */
+static void _terminalwidget_on_edit_copy(gpointer data)
+{
+	TerminalWidget * widget = data;
+
+	_terminalwidget_on_copy(widget);
+}
+
+
+/* terminalwidget_on_edit_paste */
+static void _terminalwidget_on_edit_paste(gpointer data)
+{
+	TerminalWidget * widget = data;
+
+	_terminalwidget_on_paste(widget);
+}
+
+
 /* terminalwidget_on_file_close */
 static void _terminalwidget_on_file_close(gpointer data)
 {

@@ -165,6 +165,27 @@ GtkWidget * terminaltab_get_widget(TerminalTab * tab)
 }
 
 
+/* useful */
+/* terminaltab_clipboard_copy */
+void terminaltab_clipboard_copy(TerminalTab * tab)
+{
+#ifdef WITH_XTERM
+#else
+	vte_terminal_copy_clipboard(VTE_TERMINAL(tab->socket));
+#endif
+}
+
+
+/* terminaltab_clipboard_paste */
+void terminaltab_clipboard_paste(TerminalTab * tab)
+{
+#ifdef WITH_XTERM
+#else
+	vte_terminal_paste_clipboard(VTE_TERMINAL(tab->socket));
+#endif
+}
+
+
 /* private */
 /* functions */
 /* callbacks */

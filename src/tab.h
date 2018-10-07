@@ -46,4 +46,8 @@ void terminaltab_delete(TerminalTab * tab);
 GtkWidget * terminaltab_get_label(TerminalTab * tab);
 GtkWidget * terminaltab_get_widget(TerminalTab * tab);
 
+/* useful */
+void terminaltab_clipboard_copy(TerminalTab * tab);
+void terminaltab_clipboard_paste(TerminalTab * tab);
+
 #endif /* !TERMINAL_TAB_H */
