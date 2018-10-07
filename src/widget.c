@@ -413,7 +413,7 @@ static void _terminalwidget_tab_close(TerminalWidget * widget, unsigned int i)
 
 
 /* callbacks */
-/*_terminalwidget_on_close */
+/* terminalwidget_on_close */
 static void _terminalwidget_on_close(gpointer data)
 {
 	TerminalWidget * widget = data;
@@ -426,7 +426,7 @@ static void _terminalwidget_on_close(gpointer data)
 }
 
 
-/*_terminalwidget_on_fullscreen */
+/* terminalwidget_on_fullscreen */
 static void _terminalwidget_on_fullscreen(gpointer data)
 {
 	TerminalWidget * widget = data;
@@ -438,7 +438,7 @@ static void _terminalwidget_on_fullscreen(gpointer data)
 }
 
 
-/*_terminalwidget_on_new_tab */
+/* terminalwidget_on_new_tab */
 static void _terminalwidget_on_new_tab(gpointer data)
 {
 	TerminalWidget * widget = data;
@@ -447,7 +447,7 @@ static void _terminalwidget_on_new_tab(gpointer data)
 }
 
 
-/*_terminalwidget_on_new_window */
+/* terminalwidget_on_new_window */
 static void _terminalwidget_on_new_window(gpointer data)
 {
 	TerminalWidget * widget = data;
@@ -458,7 +458,7 @@ static void _terminalwidget_on_new_window(gpointer data)
 
 
 #ifndef EMBEDDED
-/*_terminalwidget_on_file_close */
+/* terminalwidget_on_file_close */
 static void _terminalwidget_on_file_close(gpointer data)
 {
 	TerminalWidget * widget = data;
@@ -467,7 +467,7 @@ static void _terminalwidget_on_file_close(gpointer data)
 }
 
 
-/*_terminalwidget_on_file_close_all */
+/* terminalwidget_on_file_close_all */
 static void _terminalwidget_on_file_close_all(gpointer data)
 {
 	TerminalWidget * widget = data;
@@ -476,7 +476,7 @@ static void _terminalwidget_on_file_close_all(gpointer data)
 }
 
 
-/*_terminalwidget_on_file_new_tab */
+/* terminalwidget_on_file_new_tab */
 static void _terminalwidget_on_file_new_tab(gpointer data)
 {
 	TerminalWidget * widget = data;
@@ -485,7 +485,7 @@ static void _terminalwidget_on_file_new_tab(gpointer data)
 }
 
 
-/*_terminalwidget_on_file_new_window */
+/* terminalwidget_on_file_new_window */
 static void _terminalwidget_on_file_new_window(gpointer data)
 {
 	TerminalWidget * widget = data;
@@ -494,7 +494,7 @@ static void _terminalwidget_on_file_new_window(gpointer data)
 }
 
 
-/*_terminalwidget_on_help_about */
+/* terminalwidget_on_help_about */
 static void _terminalwidget_on_help_about(gpointer data)
 {
 	TerminalWidget * widget = data;
@@ -503,7 +503,7 @@ static void _terminalwidget_on_help_about(gpointer data)
 }
 
 
-/*_terminalwidget_on_help_contents */
+/* terminalwidget_on_help_contents */
 static void _terminalwidget_on_help_contents(gpointer data)
 {
 	(void) data;
@@ -512,7 +512,7 @@ static void _terminalwidget_on_help_contents(gpointer data)
 }
 
 
-/*_terminalwidget_on_view_fullscreen */
+/* terminalwidget_on_view_fullscreen */
 static void _terminalwidget_on_view_fullscreen(gpointer data)
 {
 	TerminalWidget * widget = data;
