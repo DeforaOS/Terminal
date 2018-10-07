@@ -195,7 +195,7 @@ TerminalWidget * terminalwidget_new(Terminal * terminal, GtkWidget * window)
 #endif
 	widget->fullscreen = toolitem;
 	g_signal_connect_swapped(G_OBJECT(toolitem), "toggled", G_CALLBACK(
-				_terminalwidget_on_fullscreen), terminal);
+				_terminalwidget_on_fullscreen), widget);
 	gtk_toolbar_insert(GTK_TOOLBAR(toolbar), toolitem, -1);
 	gtk_box_pack_start(GTK_BOX(vbox), toolbar, FALSE, TRUE, 0);
 	gtk_window_add_accel_group(GTK_WINDOW(window), group);
