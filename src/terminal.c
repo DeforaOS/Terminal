@@ -49,14 +49,14 @@ static char const _license[] =
 #define N_(string) (string)
 
 /* constants */
-#ifndef PROGNAME
-# define PROGNAME	"terminal"
+#ifndef PROGNAME_TERMINAL
+# define PROGNAME_TERMINAL	"terminal"
 #endif
 #ifndef PREFIX
-# define PREFIX		"/usr/local"
+# define PREFIX			"/usr/local"
 #endif
 #ifndef BINDIR
-# define BINDIR		PREFIX "/bin"
+# define BINDIR			PREFIX "/bin"
 #endif
 
 
@@ -386,7 +386,7 @@ static int _terminal_open_tab(Terminal * terminal)
 	if(g_spawn_async(terminal->directory, argv, NULL, flags, NULL, NULL,
 				&tab->pid, &error) == FALSE)
 	{
-		fprintf(stderr, "%s: %s: %s\n", PROGNAME, argv[1],
+		fprintf(stderr, "%s: %s: %s\n", PROGNAME_TERMINAL, argv[1],
 				error->message);
 		g_error_free(error);
 		return -1;
@@ -401,7 +401,8 @@ static int _terminal_open_tab(Terminal * terminal)
 /* terminal_open_window */
 static int _terminal_open_window(Terminal * terminal)
 {
-	char * argv[] = { BINDIR "/" PROGNAME, PROGNAME, NULL };
+	char * argv[] = { BINDIR "/" PROGNAME_TERMINAL, PROGNAME_TERMINAL,
+		NULL };
 	GSpawnFlags flags = G_SPAWN_FILE_AND_ARGV_ZERO;
 	GError * error = NULL;
 	(void) terminal;
@@ -409,7 +410,7 @@ static int _terminal_open_window(Terminal * terminal)
 	if(g_spawn_async(NULL, argv, NULL, flags, NULL, NULL, NULL, &error)
 			== FALSE)
 	{
-		fprintf(stderr, "%s: %s: %s\n", PROGNAME, argv[0],
+		fprintf(stderr, "%s: %s: %s\n", PROGNAME_TERMINAL, argv[0],
 				error->message);
 		g_error_free(error);
 		return -1;
@@ -445,8 +446,8 @@ static void _terminal_close_all(Terminal * terminal)
 	/* kill the remaining tabs */
 	for(i = 0; i < cnt; i++)
 		if(kill(pid[i], SIGTERM) != 0)
-			fprintf(stderr, "%s: %s: %s\n", PROGNAME, "kill",
-					strerror(errno));
+			fprintf(stderr, "%s: %s: %s\n", PROGNAME_TERMINAL,
+					"kill", strerror(errno));
 	free(pid);
 	gtk_main_quit();
 }
@@ -464,8 +465,8 @@ static void _terminal_close_tab(Terminal * terminal, unsigned int i)
 	{
 		g_spawn_close_pid(terminal->tabs[i]->pid);
 		if(kill(terminal->tabs[i]->pid, SIGTERM) != 0)
-			fprintf(stderr, "%s: %s: %s\n", PROGNAME, "kill",
-					strerror(errno));
+			fprintf(stderr, "%s: %s: %s\n", PROGNAME_TERMINAL,
+					"kill", strerror(errno));
 	}
 	free(terminal->tabs[i]);
 	gtk_notebook_remove_page(GTK_NOTEBOOK(terminal->notebook), i);
@@ -495,7 +496,7 @@ static void _terminal_on_child_watch(GPid pid, gint status, gpointer data)
 	if(WIFEXITED(status))
 	{
 		if(WEXITSTATUS(status) != 0)
-			fprintf(stderr, "%s: %s%u\n", PROGNAME,
+			fprintf(stderr, "%s: %s%u\n", PROGNAME_TERMINAL,
 					_("xterm exited with status "),
 					WEXITSTATUS(status));
 		g_spawn_close_pid(terminal->tabs[i]->pid);
@@ -504,7 +505,7 @@ static void _terminal_on_child_watch(GPid pid, gint status, gpointer data)
 	}
 	else if(WIFSIGNALED(status))
 	{
-		fprintf(stderr, "%s: %s%u\n", PROGNAME,
+		fprintf(stderr, "%s: %s%u\n", PROGNAME_TERMINAL,
 				_("xterm exited with signal "),
 				WTERMSIG(status));
 		g_spawn_close_pid(terminal->tabs[i]->pid);
@@ -720,7 +721,7 @@ static void _terminal_on_help_contents(gpointer data)
 {
 	(void) data;
 
-	desktop_help_contents(PACKAGE, PROGNAME);
+	desktop_help_contents(PACKAGE, PROGNAME_TERMINAL);
 }
 
 

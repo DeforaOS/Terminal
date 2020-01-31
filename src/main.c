@@ -37,17 +37,17 @@
 #define _(string) gettext(string)
 
 /* constants */
-#ifndef PROGNAME
-# define PROGNAME	"terminal"
+#ifndef PROGNAME_TERMINAL
+# define PROGNAME_TERMINAL	"terminal"
 #endif
 #ifndef PREFIX
-# define PREFIX		"/usr/local"
+# define PREFIX			"/usr/local"
 #endif
 #ifndef DATADIR
-# define DATADIR	PREFIX "/share"
+# define DATADIR		PREFIX "/share"
 #endif
 #ifndef LOCALEDIR
-# define LOCALEDIR	DATADIR "/locale"
+# define LOCALEDIR		DATADIR "/locale"
 #endif
 
 
@@ -74,7 +74,7 @@ static int _terminal(TerminalPrefs * prefs)
 			prefs->directory = NULL;
 	}
 	if((terminal = terminal_new(prefs)) == NULL)
-		return error_print(PACKAGE);
+		return error_print(PROGNAME_TERMINAL);
 	gtk_main();
 	terminal_delete(terminal);
 	return 0;
@@ -84,7 +84,7 @@ static int _terminal(TerminalPrefs * prefs)
 /* error */
 static int _error(char const * message, int ret)
 {
-	fputs(PROGNAME ": ", stderr);
+	fputs(PROGNAME_TERMINAL ": ", stderr);
 	perror(message);
 	return ret;
 }
@@ -93,7 +93,8 @@ static int _error(char const * message, int ret)
 /* usage */
 static int _usage(void)
 {
-	fprintf(stderr, _("Usage: %s [-d directory][shell]\n"), PROGNAME);
+	fprintf(stderr, _("Usage: %s [-d directory][shell]\n"),
+			PROGNAME_TERMINAL);
 	return 1;
 }
 
