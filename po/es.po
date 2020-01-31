@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Terminal 0.0.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-03-28 20:52+0200\n"
+"POT-Creation-Date: 2020-01-31 01:08+0100\n"
 "PO-Revision-Date: 2014-12-28 17:03+0100\n"
 "Last-Translator: Pierre Pronchery <khorben@defora.org>\n"
 "Language-Team: Spanish\n"
@@ -18,93 +18,93 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
 
-#: ../src/main.c:101
+#: ../src/main.c:96
 #, c-format
 msgid "Usage: %s [-d directory][shell]\n"
 msgstr "Usage: %s [-d directorio][shell]\n"
 
-#: ../src/terminal.c:147
+#: ../src/terminal.c:142
 msgid "New _tab"
 msgstr ""
 
-#: ../src/terminal.c:149
+#: ../src/terminal.c:144
 msgid "_New window"
 msgstr "_Nueva ventana"
 
-#: ../src/terminal.c:152
+#: ../src/terminal.c:147
 msgid "_Close"
 msgstr "_Cerrar"
 
-#: ../src/terminal.c:154
+#: ../src/terminal.c:149
 msgid "Close all tabs"
 msgstr ""
 
-#: ../src/terminal.c:161
+#: ../src/terminal.c:156
 msgid "_Fullscreen"
 msgstr "Pantalla Comple_ta"
 
-#: ../src/terminal.c:173
+#: ../src/terminal.c:168
 msgid "_Contents"
 msgstr "_Contenidos"
 
-#: ../src/terminal.c:176 ../src/terminal.c:179
+#: ../src/terminal.c:171 ../src/terminal.c:174
 msgid "_About"
 msgstr "_Acerca de"
 
-#: ../src/terminal.c:186
+#: ../src/terminal.c:181
 msgid "_File"
 msgstr "_Archivo"
 
-#: ../src/terminal.c:187
+#: ../src/terminal.c:182
 msgid "_View"
 msgstr "_Vista"
 
-#: ../src/terminal.c:188
+#: ../src/terminal.c:183
 msgid "_Help"
 msgstr "_Ayuda"
 
-#: ../src/terminal.c:195
+#: ../src/terminal.c:190
 msgid "New tab"
 msgstr ""
 
-#: ../src/terminal.c:197
+#: ../src/terminal.c:192
 msgid "New window"
 msgstr "Nueva ventana"
 
-#: ../src/terminal.c:243
+#: ../src/terminal.c:238
 msgid "Terminal"
 msgstr ""
 
-#: ../src/terminal.c:365
+#: ../src/terminal.c:352
 msgid "xterm"
 msgstr "xterm"
 
-#: ../src/terminal.c:511
+#: ../src/terminal.c:498
 msgid "xterm exited with status "
 msgstr ""
 
-#: ../src/terminal.c:520
+#: ../src/terminal.c:507
 msgid "xterm exited with signal "
 msgstr ""
 
-#: ../src/terminal.c:564 ../src/terminal.c:573
+#: ../src/terminal.c:551 ../src/terminal.c:560
 msgid "Question"
 msgstr "Pregunta"
 
-#: ../src/terminal.c:567
+#: ../src/terminal.c:554
 msgid ""
 "There are multiple tabs opened.\n"
 "Do you really want to close every tab opened in this window?"
 msgstr ""
 
-#: ../src/terminal.c:636 ../src/terminal.c:649
+#: ../src/terminal.c:623 ../src/terminal.c:636
 msgid "Rename tab"
 msgstr ""
 
-#: ../src/terminal.c:644
+#: ../src/terminal.c:631
 msgid "Rename this tab as:"
 msgstr ""
 
-#: ../src/terminal.c:718
+#: ../src/terminal.c:705
 msgid "Terminal for the DeforaOS desktop"
 msgstr ""
