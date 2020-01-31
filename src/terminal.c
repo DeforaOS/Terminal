@@ -354,15 +354,15 @@ static int _terminal_open_tab(Terminal * terminal)
 	widget = gtk_button_new();
 	g_signal_connect_swapped(widget, "clicked", G_CALLBACK(
 				_terminal_on_tab_rename), tab);
-	gtk_container_add(GTK_CONTAINER(widget), gtk_image_new_from_stock(
-				GTK_STOCK_EDIT, GTK_ICON_SIZE_MENU));
+	gtk_container_add(GTK_CONTAINER(widget), gtk_image_new_from_icon_name(
+				"gtk-edit", GTK_ICON_SIZE_MENU));
 	gtk_button_set_relief(GTK_BUTTON(widget), GTK_RELIEF_NONE);
 	gtk_box_pack_start(GTK_BOX(tab->widget), widget, FALSE, TRUE, 0);
 	widget = gtk_button_new();
 	g_signal_connect_swapped(widget, "clicked", G_CALLBACK(
 				_terminal_on_tab_close), tab);
-	gtk_container_add(GTK_CONTAINER(widget), gtk_image_new_from_stock(
-				GTK_STOCK_CLOSE, GTK_ICON_SIZE_MENU));
+	gtk_container_add(GTK_CONTAINER(widget), gtk_image_new_from_icon_name(
+				"gtk-close", GTK_ICON_SIZE_MENU));
 	gtk_button_set_relief(GTK_BUTTON(widget), GTK_RELIEF_NONE);
 	gtk_box_pack_start(GTK_BOX(tab->widget), widget, FALSE, TRUE, 0);
 	gtk_widget_show_all(tab->widget);
@@ -404,6 +404,7 @@ static int _terminal_open_window(Terminal * terminal)
 	char * argv[] = { BINDIR "/" PROGNAME, PROGNAME, NULL };
 	GSpawnFlags flags = G_SPAWN_FILE_AND_ARGV_ZERO;
 	GError * error = NULL;
+	(void) terminal;
 
 	if(g_spawn_async(NULL, argv, NULL, flags, NULL, NULL, NULL, &error)
 			== FALSE)
@@ -623,7 +624,7 @@ static void _terminal_on_tab_rename(gpointer data)
 			"%s", _("Rename tab"));
 # if GTK_CHECK_VERSION(2, 10, 0)
 	gtk_message_dialog_set_image(GTK_MESSAGE_DIALOG(dialog),
-			gtk_image_new_from_stock(GTK_STOCK_EDIT,
+			gtk_image_new_from_icon_name("gtk-edit",
 				GTK_ICON_SIZE_DIALOG));
 # endif
 	gtk_message_dialog_format_secondary_text(GTK_MESSAGE_DIALOG(dialog),
@@ -717,6 +718,8 @@ static void _terminal_on_help_about(gpointer data)
 /* terminal_on_help_contents */
 static void _terminal_on_help_contents(gpointer data)
 {
+	(void) data;
+
 	desktop_help_contents(PACKAGE, PROGNAME);
 }
 
